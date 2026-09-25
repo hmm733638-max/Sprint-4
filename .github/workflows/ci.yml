@@ -1,0 +1,36 @@
+name: SAHUR CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, QA, DEV, SP4, setup/solution-base]
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend/sahur-web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/sahur-web/package.json
+      - run: npm install
+      - run: npm run build
+
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - run: dotnet restore Sahur.sln
+      - run: dotnet build Sahur.sln --no-restore --configuration Release
+      - run: dotnet test Sahur.sln --no-build --configuration Release
