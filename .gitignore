@@ -1,0 +1,17 @@
+# Angular
+frontend/sahur-web/node_modules/
+frontend/sahur-web/dist/
+frontend/sahur-web/.angular/
+
+# .NET
+**/bin/
+**/obj/
+*.user
+*.suo
+
+# VS Code
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
