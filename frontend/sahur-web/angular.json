@@ -14,15 +14,31 @@
           "options": {
             "browser": "src/main.ts",
             "tsConfig": "tsconfig.app.json",
-            "assets": [{"glob":"**/*","input":"public"}],
-            "styles": ["src/styles.css"]
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "public"
+              }
+            ],
+            "styles": [
+              "src/styles.css"
+            ],
+            "optimization": {
+              "scripts": true,
+              "styles": true,
+              "fonts": false
+            }
           }
         },
         "serve": {
           "builder": "@angular/build:dev-server",
           "configurations": {
-            "production": {"buildTarget":"sahur-web:build:production"},
-            "development": {"buildTarget":"sahur-web:build"}
+            "production": {
+              "buildTarget": "sahur-web:build:production"
+            },
+            "development": {
+              "buildTarget": "sahur-web:build"
+            }
           },
           "defaultConfiguration": "development"
         }
