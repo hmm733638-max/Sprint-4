@@ -11,6 +11,14 @@ export const routes: Routes = [
         .then(module => module.LoginView)
   },
   {
+    path: 'catalogo/:id',
+    canActivate: [authGuard],
+    title: 'Detalle de producto | Sahur',
+    loadComponent: () =>
+      import('./presentation/product-detail/views/product-detail.view')
+        .then(module => module.ProductDetailView)
+  },
+  {
     path: 'catalogo',
     canActivate: [authGuard],
     title: 'Catálogo | Sahur',
