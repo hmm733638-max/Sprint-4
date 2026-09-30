@@ -6,11 +6,23 @@ import { HttpSystemStatusDataSource } from './data/datasources/http-system-statu
 import { SystemStatusDataSource } from './data/datasources/system-status.datasource';
 import { HttpSystemStatusRepository } from './data/repositories/http-system-status.repository';
 import { SYSTEM_STATUS_REPOSITORY } from './domain/repositories/system-status.repository';
+import { AuthDataSource } from './data/datasources/auth.datasource';
+import { HttpAuthDataSource } from './data/datasources/http-auth.datasource';
+import { HttpAuthRepository } from './data/repositories/http-auth.repository';
+import { BrowserSessionRepository } from './data/repositories/browser-session.repository';
+import { BrowserConnectivityRepository } from './data/repositories/browser-connectivity.repository';
+import { AUTH_REPOSITORY } from './domain/repositories/auth.repository';
+import { SESSION_REPOSITORY } from './domain/repositories/session.repository';
+import { CONNECTIVITY_REPOSITORY } from './domain/repositories/connectivity.repository';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
     provideHttpClient(),
+    { provide: AuthDataSource, useClass: HttpAuthDataSource },
+    { provide: AUTH_REPOSITORY, useClass: HttpAuthRepository },
+    { provide: SESSION_REPOSITORY, useClass: BrowserSessionRepository },
+    { provide: CONNECTIVITY_REPOSITORY, useClass: BrowserConnectivityRepository },
     {
       provide: SystemStatusDataSource,
       useClass: HttpSystemStatusDataSource

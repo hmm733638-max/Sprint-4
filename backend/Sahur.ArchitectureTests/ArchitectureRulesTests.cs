@@ -11,6 +11,7 @@ public sealed class ArchitectureRulesTests
     [InlineData("Sahur.Api")]
     [InlineData("Microsoft.EntityFrameworkCore")]
     [InlineData("MediatR")]
+    [InlineData("Microsoft.AspNetCore")]
     public void Domain_Must_Not_Depend_On_Outer_Layers(string forbiddenNamespace)
     {
         var result = Types
@@ -26,6 +27,7 @@ public sealed class ArchitectureRulesTests
     [InlineData("Sahur.Infrastructure")]
     [InlineData("Sahur.Api")]
     [InlineData("Microsoft.EntityFrameworkCore")]
+    [InlineData("Microsoft.AspNetCore")]
     public void Application_Must_Not_Depend_On_Outer_Layers(string forbiddenNamespace)
     {
         var result = Types
