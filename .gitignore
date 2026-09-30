@@ -1,17 +1,23 @@
-# Angular
-frontend/sahur-web/node_modules/
-frontend/sahur-web/dist/
-frontend/sahur-web/.angular/
-
 # .NET
 **/bin/
 **/obj/
+.vs/
 *.user
 *.suo
 
-# VS Code
-.vscode/
+# Angular / Node
+**/node_modules/
+**/dist/
+.angular/
+coverage/
 
-# OS
+# IDE / OS
+.vscode/
+.idea/
 .DS_Store
 Thumbs.db
+
+# Local environment
+.env
+.env.*
+!.env.example

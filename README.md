@@ -1,38 +1,139 @@
-# SAHUR — Sprint 4
+# SAHUR — Sprint 4 Base
 
-Solución base Full Stack con Angular + ASP.NET Core.
+Solución base colaborativa Full Stack para Sprint 4.
+
+Esta versión **no consume APIs externas**. La aplicación está preparada para que cada integrante implemente sus User Stories sobre una arquitectura común, usando una persistencia simulada con **Entity Framework Core InMemory**.
+
+## Stack
+
+- Frontend: Angular 22 + TypeScript
+- Node.js: 24 LTS
+- GitHub CLI: opcional para crear el Pull Request desde terminal
+- Backend: ASP.NET Core / .NET 10
+- Persistencia de desarrollo: Entity Framework Core InMemory
+- Comunicación: REST HTTP/JSON
+- Control de versiones: Git + GitHub
 
 ## Arquitectura obligatoria
 
-- Frontend: MVVM estricto + SOLID + Dependency Injection.
-- Backend: CQRS estricto + SOLID + Clean Architecture + Dependency Injection.
-- Persistencia simulada: Entity Framework Core InMemory.
-- API externa: Fake Store API, consumida únicamente desde Infrastructure.
+### Frontend
 
-## Reglas
+MVVM estricto:
 
-1. Las Views de Angular solo se comunican con su ViewModel.
-2. Los ViewModels no usan HttpClient directamente.
-3. Los Use Cases dependen de abstracciones, nunca de implementaciones concretas.
-4. Los Controllers .NET solo traducen HTTP a Commands/Queries y usan ISender.
-5. Commands y Queries están separados y tienen handlers independientes.
-6. Queries no modifican estado.
-7. Commands no se utilizan para presentar modelos de lectura.
-8. Domain no depende de API, Infrastructure, EF Core ni MediatR.
-9. Application no depende de Infrastructure ni API.
-10. Infrastructure implementa contratos definidos por capas internas.
+```text
+View
+↓
+ViewModel
+↓
+Use Case
+↓
+Repository Interface
+↓
+Repository Implementation
+↓
+DataSource
+↓
+HttpClient
+↓
+Backend .NET
+```
 
-## Flujo de lectura
+Reglas:
 
-Angular View -> ViewModel -> Use Case -> Repository abstraction -> HTTP repository -> Sahur.Api -> Query -> QueryHandler -> Read repository -> Fake Store API
+- La View no contiene lógica de negocio.
+- La View solo interactúa con su ViewModel.
+- El ViewModel administra estado, loading y errores.
+- El ViewModel no usa HttpClient.
+- Los Use Cases dependen de abstracciones.
+- HttpClient solo se usa en `data/`.
+- Los DTO de transporte no llegan directamente a la View.
 
-## Flujo de escritura
+### Backend
 
-HTTP -> Controller -> Command -> CommandHandler -> Write repository -> EF Core InMemory
+CQRS estricto + Clean Architecture:
+
+```text
+Controller
+↓
+Command / Query
+↓
+MediatR
+↓
+Handler
+↓
+Repository abstraction
+↓
+Infrastructure
+↓
+EF Core InMemory
+```
+
+Reglas:
+
+- Queries: solo lectura, nunca modifican estado.
+- Commands: crean, modifican o eliminan estado.
+- Cada Command/Query tiene su Handler.
+- Controllers delgados: no contienen lógica de negocio ni DbContext.
+- Domain no depende de Application, Infrastructure, Api, EF Core o MediatR.
+- Application no depende de Infrastructure ni Api.
+- Infrastructure implementa contratos de capas internas.
+- No se utiliza un `IRepository` genérico gigante. Los contratos se crean por responsabilidad y feature.
+
+## Estructura
+
+```text
+Sprint-4/
+├── frontend/
+│   └── sahur-web/
+│       └── src/app/
+│           ├── domain/
+│           ├── data/
+│           └── presentation/
+├── backend/
+│   ├── Sahur.Api/
+│   ├── Sahur.Application/
+│   ├── Sahur.Domain/
+│   ├── Sahur.Infrastructure/
+│   └── Sahur.ArchitectureTests/
+├── docs/
+└── EVIDENCIAS_BASE/
+```
+
+## Persistencia simulada
+
+`Sahur.Infrastructure` registra `SahurDbContext` con:
+
+```csharp
+options.UseInMemoryDatabase("SahurDb");
+```
+
+Cada equipo debe agregar sus `DbSet`, configuraciones y repositorios en Infrastructure. La persistencia se trata como una base real: repositorios, `SaveChangesAsync`, DI y separación de responsabilidades.
+
+## Diagnóstico base
+
+La solución incluye únicamente una funcionalidad técnica de diagnóstico para comprobar el flujo completo de la arquitectura:
+
+```text
+Angular Home View
+→ HomeViewModel
+→ GetSystemStatusUseCase
+→ SystemStatusRepository
+→ HttpSystemStatusRepository
+→ HttpSystemStatusDataSource / HttpClient
+→ GET /api/system/status
+→ SystemController
+→ GetSystemStatusQuery
+→ GetSystemStatusQueryHandler
+→ ISystemStatusReadRepository
+→ InMemorySystemStatusReadRepository
+→ SahurDbContext / EF Core InMemory
+```
+
+No es una User Story de negocio. Sirve como referencia mínima para que los colaboradores implementen sus features sin inventar acoplamientos.
 
 ## Ejecutar
 
-Frontend:
+### Frontend
 
 ```bash
 cd frontend/sahur-web
@@ -40,28 +141,46 @@ npm install
 npm start
 ```
 
-Backend:
+Angular: `http://localhost:4200`
+
+### Backend
 
 ```bash
 cd backend
-dotnet restore
+dotnet restore Sahur.sln
 dotnet run --project Sahur.Api
 ```
 
-Pruebas arquitectónicas:
+API: `http://localhost:5000`
+
+## Verificar
 
 ```bash
-cd backend
-dotnet test
+cd frontend/sahur-web
+npm run build
+
+cd ../../../backend
+dotnet build Sahur.sln --configuration Release
+dotnet test Sahur.sln --configuration Release
 ```
 
-## US03-US05
+Revisa `docs/ARCHITECTURE.md` y `docs/COLLABORATION.md` antes de implementar una User Story.
 
-La implementación de catálogo, filtros y detalle está documentada en `IMPLEMENTACION_US03_US05.md`.
+## Preparación rápida en Windows
 
-Para preparar Windows automáticamente, consulta `SETUP_WINDOWS.md` o ejecuta:
+El repositorio incluye:
+
+```text
+scripts/setup-windows.ps1
+scripts/verify.ps1
+scripts/run-dev.ps1
+```
+
+En PowerShell desde la raíz:
 
 ```powershell
 Set-ExecutionPolicy -Scope Process Bypass
-.\scripts\prepare-environment.ps1
+.\scripts\setup-windows.ps1
+.\scripts\verify.ps1
+.\scripts\run-dev.ps1
 ```

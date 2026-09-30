@@ -1,59 +1,23 @@
-import { LogoutUseCase } from './domain/use-cases/auth/logout.use-case';
-import { GetSessionUseCase } from './domain/use-cases/auth/get-session.use-case';
+import { provideHttpClient } from '@angular/common/http';
 import { ApplicationConfig } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import {
-  provideHttpClient,
-  withInterceptors
-} from '@angular/common/http';
-
 import { routes } from './app.routes';
-import { backendCredentialsInterceptor } from './core/http/backend-credentials.interceptor';
-import { PRODUCT_REPOSITORY } from './domain/repositories/product.repository';
-import { HttpProductRepository } from './data/repositories/http-product.repository';
-import { AuthRepository } from './domain/repositories/auth.repository';
-import { HttpAuthRepository } from './data/repositories/http-auth.repository';
-import { NetworkStatus } from './domain/services/network-status';
-import { BrowserNetworkStatus } from './data/services/browser-network-status';
-import { LoginUseCase } from './domain/use-cases/auth/login.use-case';
+import { HttpSystemStatusDataSource } from './data/datasources/http-system-status.datasource';
+import { SystemStatusDataSource } from './data/datasources/system-status.datasource';
+import { HttpSystemStatusRepository } from './data/repositories/http-system-status.repository';
+import { SYSTEM_STATUS_REPOSITORY } from './domain/repositories/system-status.repository';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    {
-      provide: GetSessionUseCase,
-      useFactory: (repository: AuthRepository, network: NetworkStatus) =>
-        new GetSessionUseCase(repository, network),
-      deps: [AuthRepository, NetworkStatus]
-    },
-    {
-      provide: LogoutUseCase,
-      useFactory: (repository: AuthRepository, network: NetworkStatus) =>
-        new LogoutUseCase(repository, network),
-      deps: [AuthRepository, NetworkStatus]
-    },
     provideRouter(routes),
-    provideHttpClient(
-      withInterceptors([backendCredentialsInterceptor])
-    ),
+    provideHttpClient(),
     {
-      provide: PRODUCT_REPOSITORY,
-      useClass: HttpProductRepository
+      provide: SystemStatusDataSource,
+      useClass: HttpSystemStatusDataSource
     },
     {
-      provide: AuthRepository,
-      useClass: HttpAuthRepository
-    },
-    {
-      provide: NetworkStatus,
-      useClass: BrowserNetworkStatus
-    },
-    {
-      provide: LoginUseCase,
-      useFactory: (
-        repository: AuthRepository,
-        network: NetworkStatus
-      ) => new LoginUseCase(repository, network),
-      deps: [AuthRepository, NetworkStatus]
+      provide: SYSTEM_STATUS_REPOSITORY,
+      useClass: HttpSystemStatusRepository
     }
   ]
 };
