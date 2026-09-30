@@ -14,11 +14,13 @@ import { BrowserConnectivityRepository } from './data/repositories/browser-conne
 import { AUTH_REPOSITORY } from './domain/repositories/auth.repository';
 import { SESSION_REPOSITORY } from './domain/repositories/session.repository';
 import { CONNECTIVITY_REPOSITORY } from './domain/repositories/connectivity.repository';
+import { LogoutUseCase } from './domain/use-cases/auth/logout.use-case';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
     provideHttpClient(),
+    LogoutUseCase,
     { provide: AuthDataSource, useClass: HttpAuthDataSource },
     { provide: AUTH_REPOSITORY, useClass: HttpAuthRepository },
     { provide: SESSION_REPOSITORY, useClass: BrowserSessionRepository },

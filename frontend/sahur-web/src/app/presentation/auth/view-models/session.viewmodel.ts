@@ -23,6 +23,9 @@ export class SessionViewModel {
       return false;
     }
   }
-
+clearSession(): void {
+  this.userState.set(null);
+  this.errorState.set(null);
+}
   clearError(): void { this.errorState.set(null); }
 }
