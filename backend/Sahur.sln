@@ -12,6 +12,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sahur.Api", "Sahur.Api\Sahu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sahur.ArchitectureTests", "Sahur.ArchitectureTests\Sahur.ArchitectureTests.csproj", "{5A555555-5555-4555-8555-555555555555}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sahur.AuthTests", "Sahur.AuthTests\Sahur.AuthTests.csproj", "{C1D6BFA7-41AF-457E-9244-44D5CE484529}"
+EndProject
 Global
  GlobalSection(SolutionConfigurationPlatforms) = preSolution
   Debug|Any CPU = Debug|Any CPU
@@ -38,5 +40,9 @@ Global
   {4A444444-4444-4444-8444-444444444444}.Debug|Any CPU.Build.0 = Debug|Any CPU
   {5A555555-5555-4555-8555-555555555555}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
   {5A555555-5555-4555-8555-555555555555}.Debug|Any CPU.Build.0 = Debug|Any CPU
+  {C1D6BFA7-41AF-457E-9244-44D5CE484529}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+  {C1D6BFA7-41AF-457E-9244-44D5CE484529}.Debug|Any CPU.Build.0 = Debug|Any CPU
+  {C1D6BFA7-41AF-457E-9244-44D5CE484529}.Release|Any CPU.ActiveCfg = Release|Any CPU
+  {C1D6BFA7-41AF-457E-9244-44D5CE484529}.Release|Any CPU.Build.0 = Release|Any CPU
  EndGlobalSection
 EndGlobal

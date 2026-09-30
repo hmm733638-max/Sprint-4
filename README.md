@@ -111,7 +111,7 @@ Cada equipo debe agregar sus `DbSet`, configuraciones y repositorios en Infrastr
 
 ## Diagnóstico base
 
-La solución incluye únicamente una funcionalidad técnica de diagnóstico para comprobar el flujo completo de la arquitectura:
+La solución conserva una funcionalidad técnica de diagnóstico para comprobar el flujo completo de la arquitectura:
 
 ```text
 Angular Home View
@@ -130,6 +130,14 @@ Angular Home View
 ```
 
 No es una User Story de negocio. Sirve como referencia mínima para que los colaboradores implementen sus features sin inventar acoplamientos.
+
+## US01 con backend propio
+
+Esta rama implementa login con usuarios configurados por el equipo, contraseñas con hash y sesiones en EF Core InMemory. `POST /api/auth/login` devuelve un token Bearer; `GET /api/auth/me` recupera al usuario autenticado. Angular conserva el token durante la pestaña mediante una abstracción de sessionStorage.
+
+Antes de arrancar, configura tus usuarios desde la raíz con `python3 scripts/configure-users.py`. Los IDs 1 y 2 son Administrador, 3 es Auditor y los demás son Cliente. No hay cuentas ni contraseñas predeterminadas. Al reiniciar el backend se recrean los usuarios configurados y se invalidan las sesiones anteriores.
+
+Consulta [la revisión, arquitectura y guía de US01](docs/US01_BACKEND_PROPIO.md) para ver el alcance, los archivos y las comprobaciones.
 
 ## Ejecutar
 
