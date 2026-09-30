@@ -54,3 +54,14 @@ Pruebas arquitectónicas:
 cd backend
 dotnet test
 ```
+
+## US03-US05
+
+La implementación de catálogo, filtros y detalle está documentada en `IMPLEMENTACION_US03_US05.md`.
+
+Para preparar Windows automáticamente, consulta `SETUP_WINDOWS.md` o ejecuta:
+
+```powershell
+Set-ExecutionPolicy -Scope Process Bypass
+.\scripts\prepare-environment.ps1
+```
