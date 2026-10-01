@@ -1,0 +1,64 @@
+<section class="catalog" aria-labelledby="catalog-title">
+  <div class="catalog-heading">
+    <div>
+      <p class="eyebrow">CATÁLOGO SAHUR</p>
+      <h2 id="catalog-title">Productos disponibles</h2>
+    </div>
+    <span class="counter">{{ vm.products().length }} artículos</span>
+  </div>
+
+  @if (vm.categories().length > 0) {
+    <nav class="filters" aria-label="Filtrar productos por categoría">
+      <button
+        type="button"
+        class="chip"
+        [class.active]="vm.selectedCategory() === null"
+        (click)="vm.selectCategory(null)">
+        Ver todos
+      </button>
+      @for (category of vm.categories(); track category) {
+        <button
+          type="button"
+          class="chip"
+          [class.active]="vm.selectedCategory() === category"
+          [attr.aria-pressed]="vm.selectedCategory() === category"
+          (click)="vm.selectCategory(category)">
+          {{ category }}
+        </button>
+      }
+    </nav>
+  }
+
+  @if (vm.loading()) {
+    <div class="state" aria-live="polite" aria-busy="true">
+      <span class="spinner" aria-hidden="true"></span>
+      <strong>Cargando productos…</strong>
+    </div>
+  } @else if (vm.error(); as message) {
+    <div class="state error" role="alert">
+      <strong>{{ message }}</strong>
+      <button type="button" (click)="vm.retry()">Reintentar</button>
+    </div>
+  } @else {
+    <div class="grid">
+      @for (product of vm.products(); track product.id) {
+        <article class="product-card">
+          <button type="button" class="card-action" (click)="vm.openProduct(product.id)">
+            <span class="image-wrap">
+              <img
+                [src]="product.imageUrl"
+                [alt]="product.title"
+                loading="lazy"
+                decoding="async">
+            </span>
+            <span class="category">{{ product.category }}</span>
+            <span class="title">{{ product.title }}</span>
+            <strong>{{ product.price | currency:'MXN':'symbol-narrow':'1.2-2' }}</strong>
+          </button>
+        </article>
+      } @empty {
+        <div class="state"><strong>No hay productos para esta categoría.</strong></div>
+      }
+    </div>
+  }
+</section>
