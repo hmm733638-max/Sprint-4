@@ -1,9 +1,11 @@
 import { Component } from '@angular/core';
+import { CatalogView } from '../../catalog/views/catalog.view';
 import { MainViewModel } from '../view-models/main.viewmodel';
 
 @Component({
   selector: 'app-main-view',
   standalone: true,
+  imports: [CatalogView],
   providers: [MainViewModel],
   template: `
     <main>
@@ -19,10 +21,12 @@ import { MainViewModel } from '../view-models/main.viewmodel';
           </button>
         </header>
 
-        <section>
+        <section class="welcome">
           <h2>{{ vm.title() }}</h2>
-          <p>Tu sesión está activa.</p>
+          <p>Tu sesión está activa. Consulta el catálogo disponible.</p>
         </section>
+
+        <app-catalog-view />
       }
     </main>
   `,
@@ -71,7 +75,7 @@ import { MainViewModel } from '../view-models/main.viewmodel';
       font-weight: 700;
     }
 
-    section {
+    section.welcome {
       padding: 28px;
       background: white;
       border-radius: 24px;

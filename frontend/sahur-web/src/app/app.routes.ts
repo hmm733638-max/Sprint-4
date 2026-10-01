@@ -15,6 +15,12 @@ export const routes: Routes = [
     loadComponent: () => import('./presentation/auth/views/main.view').then(module => module.MainView)
   },
   {
+    path: 'productos/:id',
+    title: 'Detalle de producto | SAHUR',
+    canActivate: [authenticatedGuard],
+    loadComponent: () => import('./presentation/product-detail/views/product-detail.view').then(module => module.ProductDetailView)
+  },
+  {
     path: 'diagnostico',
     title: 'SAHUR Sprint 4',
     loadComponent: () =>

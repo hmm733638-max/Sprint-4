@@ -139,6 +139,15 @@ Antes de arrancar, configura tus usuarios desde la raíz con `python3 scripts/co
 
 Consulta [la revisión, arquitectura y guía de US01](docs/US01_BACKEND_PROPIO.md) para ver el alcance, los archivos y las comprobaciones.
 
+
+## Épica 2 — US03, US04 y US05
+
+La Épica 2 implementa catálogo, categorías, filtro y detalle de productos usando exclusivamente el backend propio SAHUR y EF Core InMemory. No se utiliza Fake Store API.
+
+El catálogo está disponible después del login en `/inicio`; el detalle utiliza `/productos/:id`. Administrador puede editar/eliminar productos y esas operaciones también se autorizan en backend. Cliente y Auditor solo tienen permisos de consulta.
+
+Consulta `docs/epica2/EPICA2_IMPLEMENTACION.md` para arquitectura, flujos, criterios de aceptación y archivos. Los documentos originales entregados para US03, US04 y US05 también se conservan en `docs/epica2/`.
+
 ## Ejecutar
 
 ### Frontend

@@ -15,6 +15,10 @@ import { AUTH_REPOSITORY } from './domain/repositories/auth.repository';
 import { SESSION_REPOSITORY } from './domain/repositories/session.repository';
 import { CONNECTIVITY_REPOSITORY } from './domain/repositories/connectivity.repository';
 import { LogoutUseCase } from './domain/use-cases/auth/logout.use-case';
+import { ProductDataSource } from './data/datasources/product.datasource';
+import { HttpProductDataSource } from './data/datasources/http-product.datasource';
+import { HttpProductRepository } from './data/repositories/http-product.repository';
+import { PRODUCT_REPOSITORY } from './domain/repositories/product.repository';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -25,6 +29,8 @@ export const appConfig: ApplicationConfig = {
     { provide: AUTH_REPOSITORY, useClass: HttpAuthRepository },
     { provide: SESSION_REPOSITORY, useClass: BrowserSessionRepository },
     { provide: CONNECTIVITY_REPOSITORY, useClass: BrowserConnectivityRepository },
+    { provide: ProductDataSource, useClass: HttpProductDataSource },
+    { provide: PRODUCT_REPOSITORY, useClass: HttpProductRepository },
     {
       provide: SystemStatusDataSource,
       useClass: HttpSystemStatusDataSource
