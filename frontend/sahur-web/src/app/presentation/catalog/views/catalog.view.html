@@ -4,7 +4,12 @@
       <p class="eyebrow">CATÁLOGO SAHUR</p>
       <h2 id="catalog-title">Productos disponibles</h2>
     </div>
-    <span class="counter">{{ vm.products().length }} artículos</span>
+    <div class="heading-actions">
+      <span class="counter">{{ vm.products().length }} artículos</span>
+      @if (vm.isAdministrator()) {
+        <button type="button" class="create-product" (click)="vm.openCreateProduct()">+ Agregar producto</button>
+      }
+    </div>
   </div>
 
   @if (vm.categories().length > 0) {

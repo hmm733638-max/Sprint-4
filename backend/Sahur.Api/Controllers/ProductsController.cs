@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Sahur.Api.Contracts.Products;
+using Sahur.Application.Products.Commands.CreateProduct;
 using Sahur.Application.Products.Commands.DeleteProduct;
 using Sahur.Application.Products.Commands.UpdateProduct;
 using Sahur.Application.Products.Models;
@@ -41,6 +42,22 @@ public sealed class ProductsController(ISender sender) : ControllerBase
     {
         var product = await sender.Send(new GetProductByIdQuery(id), cancellationToken);
         return product is null ? NotFound() : Ok(product);
+    }
+
+    [Authorize(Roles = "Administrador")]
+    [HttpPost]
+    public async Task<ActionResult<ProductReadModel>> Create(
+        CreateProductRequest request,
+        CancellationToken cancellationToken)
+    {
+        var product = await sender.Send(new CreateProductCommand(
+            request.Title,
+            request.Price,
+            request.Description,
+            request.ImageUrl,
+            request.Category), cancellationToken);
+
+        return CreatedAtAction(nameof(GetById), new { id = product.Id }, product);
     }
 
     [Authorize(Roles = "Administrador")]

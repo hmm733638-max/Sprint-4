@@ -1,6 +1,10 @@
 <main class="detail-shell">
   <button type="button" class="back" (click)="vm.backToCatalog()">← Volver al catálogo</button>
 
+  @if (vm.notification(); as message) {
+    <div class="toast" role="status" aria-live="polite">{{ message }}</div>
+  }
+
   @if (vm.loading()) {
     <section class="state" aria-live="polite" aria-busy="true">
       <span class="spinner" aria-hidden="true"></span>
@@ -66,16 +70,16 @@
             }
 
             @if (vm.deleteConfirmation()) {
-              <div class="delete-confirmation">
-                <strong>¿Eliminar este producto?</strong>
-                <p>La operación se aplicará en la base InMemory de esta ejecución.</p>
+              <dialog open class="delete-dialog" aria-labelledby="delete-title" aria-describedby="delete-description">
+                <strong id="delete-title">¿Estás seguro de eliminar este producto?</strong>
+                <p id="delete-description">Esta acción eliminará el artículo del catálogo durante esta ejecución.</p>
                 <div class="actions">
                   <button type="button" class="danger" [disabled]="vm.saving()" (click)="vm.confirmDelete()">
                     {{ vm.saving() ? 'Eliminando…' : 'Sí, eliminar' }}
                   </button>
                   <button type="button" class="secondary" [disabled]="vm.saving()" (click)="vm.cancelDelete()">Cancelar</button>
                 </div>
-              </div>
+              </dialog>
             }
           </section>
         }
