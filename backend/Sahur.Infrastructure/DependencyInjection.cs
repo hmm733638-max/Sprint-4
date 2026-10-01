@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Sahur.Application.Abstractions;
 using Sahur.Infrastructure.Auth;
 using Sahur.Infrastructure.Persistence;
+using Sahur.Infrastructure.Products;
 using Sahur.Infrastructure.System;
 using Sahur.Infrastructure.Users;
 
@@ -20,10 +21,13 @@ public static class DependencyInjection
         services.AddScoped<IUserReadRepository, EfUserReadRepository>();
         services.AddScoped<IUserSessionReadRepository, EfUserSessionReadRepository>();
         services.AddScoped<IUserSessionWriteRepository, EfUserSessionWriteRepository>();
+        services.AddScoped<IProductReadRepository, EfProductReadRepository>();
+        services.AddScoped<IProductWriteRepository, EfProductWriteRepository>();
         services.AddSingleton<IPasswordHashService, IdentityPasswordHashService>();
         services.AddSingleton<IAccessTokenService, RandomAccessTokenService>();
         services.AddSingleton(TimeProvider.System);
         services.AddScoped<SahurDatabaseSeeder>();
+        services.AddScoped<ProductDatabaseSeeder>();
 
         return services;
     }
