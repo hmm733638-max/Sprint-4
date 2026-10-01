@@ -4,6 +4,17 @@ public sealed class Product
 {
     private Product() { }
 
+    private Product(
+        string title,
+        decimal price,
+        string description,
+        string category,
+        string imageUrl)
+    {
+        ImageUrl = Require(imageUrl, nameof(imageUrl));
+        Update(title, price, description, category);
+    }
+
     public Product(
         int id,
         string title,
@@ -17,6 +28,13 @@ public sealed class Product
         ImageUrl = Require(imageUrl, nameof(imageUrl));
         Update(title, price, description, category);
     }
+
+    public static Product Create(
+        string title,
+        decimal price,
+        string description,
+        string category,
+        string imageUrl) => new(title, price, description, category, imageUrl);
 
     public int Id { get; private set; }
     public string Title { get; private set; } = string.Empty;

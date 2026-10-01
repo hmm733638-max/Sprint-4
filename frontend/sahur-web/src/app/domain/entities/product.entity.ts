@@ -7,6 +7,14 @@ export interface Product {
   readonly imageUrl: string;
 }
 
+export interface ProductCreate {
+  readonly title: string;
+  readonly price: number;
+  readonly description: string;
+  readonly imageUrl: string;
+  readonly category: string;
+}
+
 export interface ProductUpdate {
   readonly title: string;
   readonly price: number;

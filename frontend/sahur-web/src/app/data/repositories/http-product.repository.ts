@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { Product, ProductUpdate } from '../../domain/entities/product.entity';
+import { Product, ProductCreate, ProductUpdate } from '../../domain/entities/product.entity';
 import { ProductRepository } from '../../domain/repositories/product.repository';
 import { ProductDataSource } from '../datasources/product.datasource';
-import { mapProductDto, mapProductUpdate } from '../mappers/product.mapper';
+import { mapProductCreate, mapProductDto, mapProductUpdate } from '../mappers/product.mapper';
 
 @Injectable()
 export class HttpProductRepository implements ProductRepository {
@@ -22,6 +22,10 @@ export class HttpProductRepository implements ProductRepository {
 
   async getById(id: number): Promise<Product> {
     return mapProductDto(await this.dataSource.getById(id));
+  }
+
+  async create(product: ProductCreate): Promise<Product> {
+    return mapProductDto(await this.dataSource.create(mapProductCreate(product)));
   }
 
   async update(id: number, update: ProductUpdate): Promise<Product> {

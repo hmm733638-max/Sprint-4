@@ -3,7 +3,7 @@ import { Inject, Injectable } from '@angular/core';
 import { firstValueFrom, timeout } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { SESSION_REPOSITORY, SessionRepository } from '../../domain/repositories/session.repository';
-import { ProductDto, ProductUpdateDto } from '../dto/product.dto';
+import { ProductCreateDto, ProductDto, ProductUpdateDto } from '../dto/product.dto';
 import { ProductDataSource } from './product.datasource';
 
 @Injectable()
@@ -30,6 +30,10 @@ export class HttpProductDataSource extends ProductDataSource {
 
   getById(id: number): Promise<ProductDto> {
     return firstValueFrom(this.http.get<ProductDto>(`${environment.apiUrl}/products/${id}`, this.options()).pipe(timeout(10000)));
+  }
+
+  create(product: ProductCreateDto): Promise<ProductDto> {
+    return firstValueFrom(this.http.post<ProductDto>(`${environment.apiUrl}/products`, product, this.options()).pipe(timeout(10000)));
   }
 
   update(id: number, update: ProductUpdateDto): Promise<ProductDto> {

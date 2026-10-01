@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { administratorGuard } from './presentation/auth/guards/administrator.guard';
 import { authenticatedGuard } from './presentation/auth/guards/authenticated.guard';
 
 export const routes: Routes = [
@@ -13,6 +14,12 @@ export const routes: Routes = [
     title: 'Inicio | SAHUR',
     canActivate: [authenticatedGuard],
     loadComponent: () => import('./presentation/auth/views/main.view').then(module => module.MainView)
+  },
+  {
+    path: 'productos/nuevo',
+    title: 'Agregar producto | SAHUR',
+    canActivate: [administratorGuard],
+    loadComponent: () => import('./presentation/product-create/views/product-create.view').then(module => module.ProductCreateView)
   },
   {
     path: 'productos/:id',

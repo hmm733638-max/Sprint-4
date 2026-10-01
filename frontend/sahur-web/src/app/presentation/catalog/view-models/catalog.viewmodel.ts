@@ -1,9 +1,10 @@
-import { Injectable, signal } from '@angular/core';
+import { computed, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Product } from '../../../domain/entities/product.entity';
 import { GetProductCategoriesUseCase } from '../../../domain/use-cases/products/get-product-categories.use-case';
 import { GetProductsByCategoryUseCase } from '../../../domain/use-cases/products/get-products-by-category.use-case';
 import { GetProductsUseCase } from '../../../domain/use-cases/products/get-products.use-case';
+import { SessionViewModel } from '../../auth/view-models/session.viewmodel';
 
 @Injectable()
 export class CatalogViewModel {
@@ -18,11 +19,13 @@ export class CatalogViewModel {
   readonly selectedCategory = this.selectedCategoryState.asReadonly();
   readonly loading = this.loadingState.asReadonly();
   readonly error = this.errorState.asReadonly();
+  readonly isAdministrator = computed(() => this.session.user()?.role === 'Administrador');
 
   constructor(
     private readonly getProducts: GetProductsUseCase,
     private readonly getCategories: GetProductCategoriesUseCase,
     private readonly getProductsByCategory: GetProductsByCategoryUseCase,
+    private readonly session: SessionViewModel,
     private readonly router: Router
   ) {}
 
@@ -78,5 +81,10 @@ export class CatalogViewModel {
 
   openProduct(productId: number): void {
     void this.router.navigate(['/productos', productId]);
+  }
+
+  openCreateProduct(): void {
+    if (!this.isAdministrator()) return;
+    void this.router.navigate(['/productos/nuevo']);
   }
 }

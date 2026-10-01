@@ -1,6 +1,6 @@
-import { Product, ProductUpdate } from '../../domain/entities/product.entity';
 import { environment } from '../../../environments/environment';
-import { ProductDto, ProductUpdateDto } from '../dto/product.dto';
+import { Product, ProductCreate, ProductUpdate } from '../../domain/entities/product.entity';
+import { ProductCreateDto, ProductDto, ProductUpdateDto } from '../dto/product.dto';
 
 export const mapProductDto = (dto: ProductDto): Product => ({
   id: dto.id,
@@ -11,6 +11,14 @@ export const mapProductDto = (dto: ProductDto): Product => ({
   imageUrl: dto.imageUrl.startsWith('http')
     ? dto.imageUrl
     : `${environment.apiOrigin}${dto.imageUrl}`
+});
+
+export const mapProductCreate = (product: ProductCreate): ProductCreateDto => ({
+  title: product.title,
+  price: product.price,
+  description: product.description,
+  imageUrl: product.imageUrl,
+  category: product.category
 });
 
 export const mapProductUpdate = (update: ProductUpdate): ProductUpdateDto => ({

@@ -19,6 +19,7 @@ export class ProductDetailViewModel {
   private readonly loadingState = signal(false);
   private readonly savingState = signal(false);
   private readonly errorState = signal<string | null>(null);
+  private readonly notificationState = signal<string | null>(null);
   private readonly editModeState = signal(false);
   private readonly deleteConfirmationState = signal(false);
   private readonly draftState = signal<ProductDraft>({ title: '', price: '', description: '', category: '' });
@@ -27,6 +28,7 @@ export class ProductDetailViewModel {
   readonly loading = this.loadingState.asReadonly();
   readonly saving = this.savingState.asReadonly();
   readonly error = this.errorState.asReadonly();
+  readonly notification = this.notificationState.asReadonly();
   readonly editMode = this.editModeState.asReadonly();
   readonly deleteConfirmation = this.deleteConfirmationState.asReadonly();
   readonly draft = this.draftState.asReadonly();
@@ -48,6 +50,7 @@ export class ProductDetailViewModel {
 
     this.loadingState.set(true);
     this.errorState.set(null);
+    this.notificationState.set(null);
     this.productState.set(null);
     try {
       const product = await this.getProductById.execute(productId);
@@ -70,17 +73,21 @@ export class ProductDetailViewModel {
     this.setDraft(product);
     this.deleteConfirmationState.set(false);
     this.errorState.set(null);
+    this.notificationState.set(null);
     this.editModeState.set(true);
   }
 
   cancelEdit(): void {
     this.editModeState.set(false);
+    this.errorState.set(null);
     const product = this.product();
     if (product) this.setDraft(product);
   }
 
   updateDraft(field: keyof ProductDraft, value: string): void {
     this.draftState.update(current => ({ ...current, [field]: value }));
+    this.errorState.set(null);
+    this.notificationState.set(null);
   }
 
   async saveEdit(): Promise<void> {
@@ -103,11 +110,13 @@ export class ProductDetailViewModel {
 
     this.savingState.set(true);
     this.errorState.set(null);
+    this.notificationState.set(null);
     try {
       const updated = await this.updateProduct.execute(product.id, update);
       this.productState.set(updated);
       this.setDraft(updated);
       this.editModeState.set(false);
+      this.notificationState.set('Producto actualizado correctamente.');
     } catch {
       this.errorState.set('No fue posible guardar los cambios del producto.');
     } finally {
@@ -116,10 +125,11 @@ export class ProductDetailViewModel {
   }
 
   requestDelete(): void {
-    if (!this.isAdministrator()) return;
+    if (!this.isAdministrator() || !this.product()) return;
     this.editModeState.set(false);
     this.deleteConfirmationState.set(true);
     this.errorState.set(null);
+    this.notificationState.set(null);
   }
 
   cancelDelete(): void {
@@ -132,8 +142,12 @@ export class ProductDetailViewModel {
 
     this.savingState.set(true);
     this.errorState.set(null);
+    this.notificationState.set(null);
     try {
       await this.deleteProduct.execute(product.id);
+      this.deleteConfirmationState.set(false);
+      this.notificationState.set('Producto eliminado correctamente.');
+      await new Promise(resolve => window.setTimeout(resolve, 650));
       await this.router.navigateByUrl('/inicio');
     } catch {
       this.errorState.set('No fue posible eliminar el producto.');

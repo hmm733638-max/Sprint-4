@@ -77,21 +77,48 @@ public sealed class ProductsApiTests
     }
 
     [Fact]
-    public async Task Client_Cannot_Update_Or_Delete_Products()
+    public async Task Client_Cannot_Create_Update_Or_Delete_Products()
     {
         await using var factory = new ProductsApiFactory();
         using var client = await CreateAuthenticatedClientAsync(factory, 4);
+        var create = new
+        {
+            Title = "No permitido",
+            Price = 10.00m,
+            Description = "No permitido",
+            ImageUrl = "https://example.com/no-permitido.png",
+            Category = "Prueba"
+        };
         var update = new { Title = "No permitido", Price = 10.00m, Description = "No permitido", Category = "Prueba" };
 
+        Assert.Equal(HttpStatusCode.Forbidden, (await client.PostAsJsonAsync("/api/products", create)).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await client.PutAsJsonAsync("/api/products/1", update)).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await client.DeleteAsync("/api/products/1")).StatusCode);
     }
 
     [Fact]
-    public async Task Administrator_Can_Update_And_Delete_Product()
+    public async Task Administrator_Can_Create_Update_And_Delete_Product()
     {
         await using var factory = new ProductsApiFactory();
         using var client = await CreateAuthenticatedClientAsync(factory, 1);
+        var create = new
+        {
+            Title = "Producto nuevo",
+            Price = 456.78m,
+            Description = "Producto creado desde US06",
+            ImageUrl = "https://example.com/producto-nuevo.png",
+            Category = "Pruebas"
+        };
+
+        var createResponse = await client.PostAsJsonAsync("/api/products", create);
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+        var created = await createResponse.Content.ReadFromJsonAsync<ProductReadModel>();
+        Assert.NotNull(created);
+        Assert.True(created.Id > 0);
+        Assert.Equal("Producto nuevo", created.Title);
+        Assert.Equal(create.ImageUrl, created.ImageUrl);
+        Assert.NotNull(await client.GetFromJsonAsync<ProductReadModel>($"/api/products/{created.Id}"));
+
         var update = new { Title = "Producto actualizado", Price = 123.45m, Description = "Descripción actualizada", Category = "Pruebas" };
 
         var updateResponse = await client.PutAsJsonAsync("/api/products/1", update);
@@ -103,6 +130,23 @@ public sealed class ProductsApiTests
 
         Assert.Equal(HttpStatusCode.NoContent, (await client.DeleteAsync("/api/products/12")).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync("/api/products/12")).StatusCode);
+    }
+
+    [Fact]
+    public async Task CreateProduct_Rejects_Invalid_Request_Before_Handler()
+    {
+        await using var factory = new ProductsApiFactory();
+        using var client = await CreateAuthenticatedClientAsync(factory, 1);
+        var invalid = new
+        {
+            Title = "",
+            Price = 0m,
+            Description = "",
+            ImageUrl = "not-a-url",
+            Category = ""
+        };
+
+        Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsJsonAsync("/api/products", invalid)).StatusCode);
     }
 
     private static async Task<HttpClient> CreateAuthenticatedClientAsync(ProductsApiFactory factory, int userId)

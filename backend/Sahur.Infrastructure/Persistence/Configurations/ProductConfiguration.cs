@@ -9,6 +9,7 @@ public sealed class ProductConfiguration : IEntityTypeConfiguration<Product>
     public void Configure(EntityTypeBuilder<Product> builder)
     {
         builder.HasKey(product => product.Id);
+        builder.Property(product => product.Id).ValueGeneratedOnAdd();
         builder.Property(product => product.Title).HasMaxLength(180).IsRequired();
         builder.Property(product => product.Price).IsRequired();
         builder.Property(product => product.Description).HasMaxLength(1200).IsRequired();
