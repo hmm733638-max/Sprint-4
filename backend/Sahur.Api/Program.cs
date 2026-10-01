@@ -30,9 +30,11 @@ var app = builder.Build();
 await using (var scope = app.Services.CreateAsyncScope())
 {
     await scope.ServiceProvider.GetRequiredService<SahurDatabaseSeeder>().SeedAsync();
+    await scope.ServiceProvider.GetRequiredService<ProductDatabaseSeeder>().SeedAsync();
 }
 
 app.UseCors("Frontend");
+app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
