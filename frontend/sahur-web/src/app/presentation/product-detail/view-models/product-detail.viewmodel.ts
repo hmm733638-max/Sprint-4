@@ -1,9 +1,14 @@
 import { computed, Injectable, signal } from '@angular/core';
+
 import { Router } from '@angular/router';
+
 import { Product, ProductUpdate } from '../../../domain/entities/product.entity';
+
+import { AddToCartUseCase } from '../../../domain/use-cases/cart/add-to-cart.use-case';
 import { DeleteProductUseCase } from '../../../domain/use-cases/products/delete-product.use-case';
 import { GetProductByIdUseCase } from '../../../domain/use-cases/products/get-product-by-id.use-case';
 import { UpdateProductUseCase } from '../../../domain/use-cases/products/update-product.use-case';
+
 import { SessionViewModel } from '../../auth/view-models/session.viewmodel';
 
 interface ProductDraft {
@@ -22,7 +27,14 @@ export class ProductDetailViewModel {
   private readonly notificationState = signal<string | null>(null);
   private readonly editModeState = signal(false);
   private readonly deleteConfirmationState = signal(false);
-  private readonly draftState = signal<ProductDraft>({ title: '', price: '', description: '', category: '' });
+  private readonly quantityState = signal(1);
+
+  private readonly draftState = signal<ProductDraft>({
+    title: '',
+    price: '',
+    description: '',
+    category: ''
+  });
 
   readonly product = this.productState.asReadonly();
   readonly loading = this.loadingState.asReadonly();
@@ -32,12 +44,21 @@ export class ProductDetailViewModel {
   readonly editMode = this.editModeState.asReadonly();
   readonly deleteConfirmation = this.deleteConfirmationState.asReadonly();
   readonly draft = this.draftState.asReadonly();
-  readonly isAdministrator = computed(() => this.session.user()?.role === 'Administrador');
+  readonly quantity = this.quantityState.asReadonly();
+
+  readonly isAdministrator = computed(
+    () => this.session.user()?.role === 'Administrador'
+  );
+
+  readonly isClient = computed(
+    () => this.session.user()?.role === 'Cliente'
+  );
 
   constructor(
     private readonly getProductById: GetProductByIdUseCase,
     private readonly updateProduct: UpdateProductUseCase,
     private readonly deleteProduct: DeleteProductUseCase,
+    private readonly addToCart: AddToCartUseCase,
     private readonly session: SessionViewModel,
     private readonly router: Router
   ) {}
@@ -52,8 +73,11 @@ export class ProductDetailViewModel {
     this.errorState.set(null);
     this.notificationState.set(null);
     this.productState.set(null);
+    this.quantityState.set(1);
+
     try {
       const product = await this.getProductById.execute(productId);
+
       this.productState.set(product);
       this.setDraft(product);
     } catch {
@@ -67,9 +91,50 @@ export class ProductDetailViewModel {
     void this.router.navigateByUrl('/inicio');
   }
 
+  setQuantity(quantity: number): void {
+    if (!Number.isInteger(quantity) || quantity <= 0) {
+      return;
+    }
+
+    this.quantityState.set(quantity);
+    this.errorState.set(null);
+  }
+
+  async addProductToCart(): Promise<void> {
+    const product = this.product();
+
+    if (!this.isClient() || !product) {
+      return;
+    }
+
+    const quantity = this.quantity();
+
+    if (quantity <= 0) {
+      this.errorState.set('La cantidad debe ser mayor que cero.');
+      return;
+    }
+
+    this.errorState.set(null);
+    this.notificationState.set(null);
+
+    try {
+      await this.addToCart.execute(product.id, quantity);
+
+      this.notificationState.set(
+        'Artículo agregado al carrito correctamente.'
+      );
+    } catch {
+      this.errorState.set(
+        'No fue posible agregar el artículo al carrito.'
+      );
+    }
+  }
+
   startEdit(): void {
     const product = this.product();
+
     if (!this.isAdministrator() || !product) return;
+
     this.setDraft(product);
     this.deleteConfirmationState.set(false);
     this.errorState.set(null);
@@ -80,24 +145,42 @@ export class ProductDetailViewModel {
   cancelEdit(): void {
     this.editModeState.set(false);
     this.errorState.set(null);
+
     const product = this.product();
-    if (product) this.setDraft(product);
+
+    if (product) {
+      this.setDraft(product);
+    }
   }
 
   updateDraft(field: keyof ProductDraft, value: string): void {
-    this.draftState.update(current => ({ ...current, [field]: value }));
+    this.draftState.update(current => ({
+      ...current,
+      [field]: value
+    }));
+
     this.errorState.set(null);
     this.notificationState.set(null);
   }
 
   async saveEdit(): Promise<void> {
     const product = this.product();
+
     if (!this.isAdministrator() || !product || this.saving()) return;
 
     const draft = this.draft();
     const price = Number(draft.price);
-    if (!draft.title.trim() || !draft.description.trim() || !draft.category.trim() || !Number.isFinite(price) || price <= 0) {
-      this.errorState.set('Completa correctamente título, precio, descripción y categoría.');
+
+    if (
+      !draft.title.trim() ||
+      !draft.description.trim() ||
+      !draft.category.trim() ||
+      !Number.isFinite(price) ||
+      price <= 0
+    ) {
+      this.errorState.set(
+        'Completa correctamente título, precio, descripción y categoría.'
+      );
       return;
     }
 
@@ -111,14 +194,20 @@ export class ProductDetailViewModel {
     this.savingState.set(true);
     this.errorState.set(null);
     this.notificationState.set(null);
+
     try {
       const updated = await this.updateProduct.execute(product.id, update);
+
       this.productState.set(updated);
       this.setDraft(updated);
       this.editModeState.set(false);
-      this.notificationState.set('Producto actualizado correctamente.');
+      this.notificationState.set(
+        'Producto actualizado correctamente.'
+      );
     } catch {
-      this.errorState.set('No fue posible guardar los cambios del producto.');
+      this.errorState.set(
+        'No fue posible guardar los cambios del producto.'
+      );
     } finally {
       this.savingState.set(false);
     }
@@ -126,6 +215,7 @@ export class ProductDetailViewModel {
 
   requestDelete(): void {
     if (!this.isAdministrator() || !this.product()) return;
+
     this.editModeState.set(false);
     this.deleteConfirmationState.set(true);
     this.errorState.set(null);
@@ -138,19 +228,30 @@ export class ProductDetailViewModel {
 
   async confirmDelete(): Promise<void> {
     const product = this.product();
+
     if (!this.isAdministrator() || !product || this.saving()) return;
 
     this.savingState.set(true);
     this.errorState.set(null);
     this.notificationState.set(null);
+
     try {
       await this.deleteProduct.execute(product.id);
+
       this.deleteConfirmationState.set(false);
-      this.notificationState.set('Producto eliminado correctamente.');
-      await new Promise(resolve => window.setTimeout(resolve, 650));
+      this.notificationState.set(
+        'Producto eliminado correctamente.'
+      );
+
+      await new Promise(resolve =>
+        window.setTimeout(resolve, 650)
+      );
+
       await this.router.navigateByUrl('/inicio');
     } catch {
-      this.errorState.set('No fue posible eliminar el producto.');
+      this.errorState.set(
+        'No fue posible eliminar el producto.'
+      );
       this.deleteConfirmationState.set(false);
     } finally {
       this.savingState.set(false);
@@ -169,6 +270,10 @@ export class ProductDetailViewModel {
   private handleUnavailable(): void {
     this.productState.set(null);
     this.errorState.set('Producto no disponible');
-    window.setTimeout(() => void this.router.navigateByUrl('/inicio'), 1400);
+
+    window.setTimeout(
+      () => void this.router.navigateByUrl('/inicio'),
+      1400
+    );
   }
 }
