@@ -1,0 +1,104 @@
+<main class="shell">
+  <section class="panel">
+    <p class="eyebrow">CARRITO</p>
+
+    <h1>Mi carrito</h1>
+
+    @if (vm.loading()) {
+      <p class="lead">Cargando tu carrito...</p>
+    } @else if (vm.error()) {
+      <p class="error">{{ vm.error() }}</p>
+    } @else if (vm.isEmpty()) {
+      <div class="empty-cart">
+        <div class="empty-icon" aria-hidden="true">🛒</div>
+
+        <h2>Tu carrito está vacío</h2>
+
+        <p class="lead">
+          Tu carrito está vacío, explora el catálogo
+        </p>
+
+        <a class="catalog-link" routerLink="/inicio">
+          Explorar catálogo
+        </a>
+      </div>
+    } @else {
+      <div class="cart-content">
+        <div class="cart-items">
+          @for (line of vm.lines(); track line.product.id) {
+            <article class="cart-item">
+              <img
+                class="product-image"
+                [src]="line.product.imageUrl"
+                [alt]="line.product.title"
+              />
+
+              <div class="product-info">
+                <h2>{{ line.product.title }}</h2>
+
+                <p class="price">
+                  {{ line.product.price | currency:'MXN':'symbol':'1.2-2' }}
+                </p>
+
+                <p class="subtotal">
+                  Subtotal:
+                  <strong>
+                    {{ line.subtotal | currency:'MXN':'symbol':'1.2-2' }}
+                  </strong>
+                </p>
+              </div>
+
+              <div class="quantity-controls">
+                <button
+                  type="button"
+                  (click)="vm.updateQuantity(line.product.id, line.quantity - 1)"
+                  [attr.aria-label]="'Disminuir cantidad de ' + line.product.title"
+                >
+                  −
+                </button>
+
+                <span>{{ line.quantity }}</span>
+
+                <button
+                  type="button"
+                  (click)="vm.updateQuantity(line.product.id, line.quantity + 1)"
+                  [attr.aria-label]="'Aumentar cantidad de ' + line.product.title"
+                >
+                  +
+                </button>
+              </div>
+
+              <button
+                type="button"
+                class="remove-button"
+                (click)="vm.removeItem(line.product.id)"
+              >
+                Eliminar
+              </button>
+            </article>
+          }
+        </div>
+
+        <aside class="summary">
+          <h2>Resumen</h2>
+
+          <div class="total">
+            <span>Total</span>
+
+            <strong>
+              {{ vm.total() | currency:'MXN':'symbol':'1.2-2' }}
+            </strong>
+          </div>
+
+          <button
+            type="button"
+            class="checkout-button"
+            [disabled]="vm.isEmpty()"
+          >
+            Proceder al pago
+          </button>
+        </aside>
+      </div>
+    }
+  </section>
+</main>

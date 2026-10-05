@@ -1,98 +1,310 @@
 <main class="detail-shell">
-  <button type="button" class="back" (click)="vm.backToCatalog()">← Volver al catálogo</button>
+
+  <button
+    type="button"
+    class="back"
+    (click)="vm.backToCatalog()"
+  >
+    ← Volver al catálogo
+  </button>
 
   @if (vm.notification(); as message) {
-    <div class="toast" role="status" aria-live="polite">{{ message }}</div>
+    <div
+      class="toast"
+      role="status"
+      aria-live="polite"
+    >
+      {{ message }}
+    </div>
   }
 
   @if (vm.loading()) {
-    <section class="state" aria-live="polite" aria-busy="true">
-      <span class="spinner" aria-hidden="true"></span>
+
+    <section
+      class="state"
+      aria-live="polite"
+      aria-busy="true"
+    >
+      <span
+        class="spinner"
+        aria-hidden="true"
+      ></span>
+
       <strong>Cargando producto…</strong>
     </section>
+
   } @else if (vm.product(); as product) {
+
     <article class="detail-card">
+
       <section class="image-panel">
-        <img [src]="product.imageUrl" [alt]="product.title" decoding="async">
+
+        <img
+          [src]="product.imageUrl"
+          [alt]="product.title"
+          decoding="async"
+        >
+
       </section>
 
       <section class="info-panel">
-        <p class="category">{{ product.category }}</p>
-        <h1>{{ product.title }}</h1>
-        <p class="price">{{ product.price | currency:'MXN':'symbol-narrow':'1.2-2' }}</p>
+
+        <p class="category">
+          {{ product.category }}
+        </p>
+
+        <h1>
+          {{ product.title }}
+        </h1>
+
+        <p class="price">
+          {{ product.price | currency:'MXN':'symbol-narrow':'1.2-2' }}
+        </p>
+
         <div class="description">
+
           <h2>Descripción</h2>
-          <p>{{ product.description }}</p>
+
+          <p>
+            {{ product.description }}
+          </p>
+
         </div>
 
+        @if (vm.isClient()) {
+
+          <section
+            class="cart-panel"
+            aria-label="Agregar producto al carrito"
+          >
+
+            <div class="cart-heading">
+
+              <span>COMPRA</span>
+
+              <h2>Agregar al carrito</h2>
+
+            </div>
+
+            <label>
+              Cantidad
+
+              <input
+                type="number"
+                min="1"
+                step="1"
+                [value]="vm.quantity()"
+                (input)="vm.setQuantity(+$any($event.target).value)"
+              >
+            </label>
+
+            <button
+              type="button"
+              class="primary"
+              (click)="vm.addProductToCart()"
+            >
+              Agregar al carrito
+            </button>
+
+          </section>
+
+        }
+
         @if (vm.isAdministrator()) {
-          <section class="admin-panel" aria-label="Gestión del producto">
+
+          <section
+            class="admin-panel"
+            aria-label="Gestión del producto"
+          >
+
             <div class="admin-heading">
+
               <div>
+
                 <span>ADMINISTRACIÓN</span>
+
                 <h2>Gestión del producto</h2>
+
               </div>
+
               <strong>Administrador</strong>
+
             </div>
 
             @if (!vm.editMode() && !vm.deleteConfirmation()) {
+
               <div class="actions">
-                <button type="button" class="primary" (click)="vm.startEdit()">Editar</button>
-                <button type="button" class="danger" (click)="vm.requestDelete()">Eliminar</button>
+
+                <button
+                  type="button"
+                  class="primary"
+                  (click)="vm.startEdit()"
+                >
+                  Editar
+                </button>
+
+                <button
+                  type="button"
+                  class="danger"
+                  (click)="vm.requestDelete()"
+                >
+                  Eliminar
+                </button>
+
               </div>
+
             }
 
             @if (vm.editMode()) {
-              <div class="edit-form" aria-label="Editar producto">
+
+              <div
+                class="edit-form"
+                aria-label="Editar producto"
+              >
+
                 <label>
                   Título
-                  <input [value]="vm.draft().title" (input)="vm.updateDraft('title', $any($event.target).value)">
+
+                  <input
+                    [value]="vm.draft().title"
+                    (input)="vm.updateDraft('title', $any($event.target).value)"
+                  >
                 </label>
+
                 <label>
                   Precio
-                  <input type="number" min="0.01" step="0.01" [value]="vm.draft().price" (input)="vm.updateDraft('price', $any($event.target).value)">
+
+                  <input
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    [value]="vm.draft().price"
+                    (input)="vm.updateDraft('price', $any($event.target).value)"
+                  >
                 </label>
+
                 <label>
                   Categoría
-                  <input [value]="vm.draft().category" (input)="vm.updateDraft('category', $any($event.target).value)">
+
+                  <input
+                    [value]="vm.draft().category"
+                    (input)="vm.updateDraft('category', $any($event.target).value)"
+                  >
                 </label>
+
                 <label>
                   Descripción
-                  <textarea rows="5" [value]="vm.draft().description" (input)="vm.updateDraft('description', $any($event.target).value)"></textarea>
+
+                  <textarea
+                    rows="5"
+                    [value]="vm.draft().description"
+                    (input)="vm.updateDraft('description', $any($event.target).value)"
+                  ></textarea>
                 </label>
+
                 <div class="actions">
-                  <button type="button" class="primary" [disabled]="vm.saving()" (click)="vm.saveEdit()">
+
+                  <button
+                    type="button"
+                    class="primary"
+                    [disabled]="vm.saving()"
+                    (click)="vm.saveEdit()"
+                  >
                     {{ vm.saving() ? 'Guardando…' : 'Guardar cambios' }}
                   </button>
-                  <button type="button" class="secondary" [disabled]="vm.saving()" (click)="vm.cancelEdit()">Cancelar</button>
+
+                  <button
+                    type="button"
+                    class="secondary"
+                    [disabled]="vm.saving()"
+                    (click)="vm.cancelEdit()"
+                  >
+                    Cancelar
+                  </button>
+
                 </div>
+
               </div>
+
             }
 
             @if (vm.deleteConfirmation()) {
-              <dialog open class="delete-dialog" aria-labelledby="delete-title" aria-describedby="delete-description">
-                <strong id="delete-title">¿Estás seguro de eliminar este producto?</strong>
-                <p id="delete-description">Esta acción eliminará el artículo del catálogo durante esta ejecución.</p>
+
+              <dialog
+                open
+                class="delete-dialog"
+                aria-labelledby="delete-title"
+                aria-describedby="delete-description"
+              >
+
+                <strong id="delete-title">
+                  ¿Estás seguro de eliminar este producto?
+                </strong>
+
+                <p id="delete-description">
+                  Esta acción eliminará el artículo del catálogo durante esta ejecución.
+                </p>
+
                 <div class="actions">
-                  <button type="button" class="danger" [disabled]="vm.saving()" (click)="vm.confirmDelete()">
+
+                  <button
+                    type="button"
+                    class="danger"
+                    [disabled]="vm.saving()"
+                    (click)="vm.confirmDelete()"
+                  >
                     {{ vm.saving() ? 'Eliminando…' : 'Sí, eliminar' }}
                   </button>
-                  <button type="button" class="secondary" [disabled]="vm.saving()" (click)="vm.cancelDelete()">Cancelar</button>
+
+                  <button
+                    type="button"
+                    class="secondary"
+                    [disabled]="vm.saving()"
+                    (click)="vm.cancelDelete()"
+                  >
+                    Cancelar
+                  </button>
+
                 </div>
+
               </dialog>
+
             }
+
           </section>
+
         }
 
         @if (vm.error(); as error) {
-          <p class="inline-error" role="alert">{{ error }}</p>
+
+          <p
+            class="inline-error"
+            role="alert"
+          >
+            {{ error }}
+          </p>
+
         }
+
       </section>
+
     </article>
+
   } @else if (vm.error(); as error) {
-    <section class="state error" role="alert">
+
+    <section
+      class="state error"
+      role="alert"
+    >
+
       <strong>{{ error }}</strong>
-      <span>Regresando al catálogo general…</span>
+
+      <span>
+        Regresando al catálogo general…
+      </span>
+
     </section>
+
   }
+
 </main>
