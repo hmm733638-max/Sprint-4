@@ -1,0 +1,90 @@
+<main class="create-shell">
+  <button type="button" class="back" (click)="vm.backToCatalog()">← Volver al catálogo</button>
+
+  <section class="create-card" aria-labelledby="create-product-title">
+    <header>
+      <p class="eyebrow">ADMINISTRACIÓN · US06</p>
+      <h1 id="create-product-title">Agregar nuevo producto</h1>
+      <p>Completa todos los campos antes de registrar el artículo en el catálogo.</p>
+    </header>
+
+    <form (submit)="$event.preventDefault(); vm.submit()" novalidate>
+      <label>
+        <span>Título</span>
+        <input
+          type="text"
+          maxlength="180"
+          autocomplete="off"
+          [class.invalid]="vm.fieldError('title')"
+          [value]="vm.draft().title"
+          (input)="vm.updateField('title', $any($event.target).value)">
+        @if (vm.fieldError('title'); as error) { <small>{{ error }}</small> }
+      </label>
+
+      <label>
+        <span>Precio</span>
+        <input
+          type="number"
+          min="0.01"
+          step="0.01"
+          inputmode="decimal"
+          [class.invalid]="vm.fieldError('price')"
+          [value]="vm.draft().price"
+          (input)="vm.updateField('price', $any($event.target).value)">
+        @if (vm.fieldError('price'); as error) { <small>{{ error }}</small> }
+      </label>
+
+      <label>
+        <span>Categoría</span>
+        <input
+          type="text"
+          maxlength="80"
+          autocomplete="off"
+          [class.invalid]="vm.fieldError('category')"
+          [value]="vm.draft().category"
+          (input)="vm.updateField('category', $any($event.target).value)">
+        @if (vm.fieldError('category'); as error) { <small>{{ error }}</small> }
+      </label>
+
+      <label class="wide">
+        <span>URL de imagen</span>
+        <input
+          type="url"
+          maxlength="240"
+          placeholder="https://ejemplo.com/producto.png"
+          autocomplete="url"
+          [class.invalid]="vm.fieldError('imageUrl')"
+          [value]="vm.draft().imageUrl"
+          (input)="vm.updateField('imageUrl', $any($event.target).value)">
+        @if (vm.fieldError('imageUrl'); as error) { <small>{{ error }}</small> }
+      </label>
+
+      <label class="wide">
+        <span>Descripción</span>
+        <textarea
+          rows="6"
+          maxlength="1200"
+          [class.invalid]="vm.fieldError('description')"
+          [value]="vm.draft().description"
+          (input)="vm.updateField('description', $any($event.target).value)"></textarea>
+        @if (vm.fieldError('description'); as error) { <small>{{ error }}</small> }
+      </label>
+
+      <div class="actions wide">
+        <button type="submit" class="primary" [disabled]="vm.saving()">
+          {{ vm.saving() ? 'Guardando…' : 'Guardar producto' }}
+        </button>
+        <button type="button" class="secondary" [disabled]="vm.saving()" (click)="vm.backToCatalog()">
+          Cancelar
+        </button>
+      </div>
+    </form>
+
+    @if (vm.success(); as message) {
+      <div class="notice success" role="status">{{ message }}</div>
+    }
+    @if (vm.error(); as message) {
+      <div class="notice error" role="alert">{{ message }}</div>
+    }
+  </section>
+</main>

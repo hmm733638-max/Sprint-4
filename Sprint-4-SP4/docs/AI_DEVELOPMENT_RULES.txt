@@ -1,0 +1,2373 @@
+Estoy trabajando en el proyecto Sprint 4 - SAHUR.
+
+ANTES DE MODIFICAR CUALQUIER ARCHIVO debes analizar y comprender completamente la arquitectura, estructura, dependencias, reglas y estado actual del proyecto.
+
+Este repositorio contiene una SOLUCIÓN BASE compartida entre varios integrantes.
+
+NO debes asumir que una funcionalidad ya existe.
+NO debes inventar funcionalidades.
+NO debes implementar User Stories que no me correspondan.
+NO debes modificar trabajo de otros integrantes salvo que sea estrictamente necesario para integrar mi User Story.
+
+IMPORTANTE:
+
+Antes de comenzar a desarrollar debo adjuntarte las User Stories que me corresponden.
+
+NO COMIENCES A IMPLEMENTAR FUNCIONALIDADES hasta haber leído mis User Stories.
+
+Si todavía no te he proporcionado mis User Stories, únicamente analiza el proyecto, arquitectura, dependencias y estructura.
+
+==================================================
+CONTEXTO GENERAL DEL PROYECTO
+==================================================
+
+SAHUR es una aplicación Full Stack desarrollada con:
+
+Frontend:
+- Angular
+- TypeScript
+
+Backend:
+- ASP.NET Core
+- .NET 10
+- C#
+
+Persistencia:
+- Entity Framework Core
+- Entity Framework Core InMemory
+
+Comunicación:
+- REST API
+- HTTP
+- JSON
+
+Control de versiones:
+- Git
+- GitHub
+
+IDE recomendado:
+- Visual Studio Code
+
+La aplicación NO utiliza Fake Store API.
+
+La aplicación NO debe depender de APIs externas para implementar sus funcionalidades principales.
+
+Toda la lógica, datos simulados, persistencia y comportamiento del sistema deben implementarse dentro de nuestra propia arquitectura.
+
+Entity Framework Core InMemory funciona como la base de datos simulada durante este Sprint.
+
+Debe tratarse como una base de datos real.
+
+Eso significa que deben utilizarse correctamente:
+
+DbContext
+DbSet
+Repositories
+SaveChangesAsync
+Dependency Injection
+Entidades de dominio
+Queries
+Commands
+Handlers
+DTOs
+Mappers cuando correspondan
+
+NO se permiten listas globales improvisadas como sustituto de la persistencia.
+
+==================================================
+ESTRUCTURA GENERAL
+==================================================
+
+La solución está organizada aproximadamente así:
+
+Sprint-4/
+│
+├── frontend/
+│   └── sahur-web/
+│
+├── backend/
+│   ├── Sahur.Api/
+│   ├── Sahur.Application/
+│   ├── Sahur.Domain/
+│   ├── Sahur.Infrastructure/
+│   └── Sahur.ArchitectureTests/
+│
+├── scripts/
+│
+├── EVIDENCIAS_BASE/
+│
+├── .github/
+│
+└── README.md
+
+NO debes cambiar esta separación sin una razón arquitectónica real.
+
+NO reorganices todo el proyecto porque prefieras otra estructura.
+
+La solución base es el estándar del equipo.
+
+==================================================
+REGLAS ARQUITECTÓNICAS OBLIGATORIAS
+==================================================
+
+Este proyecto debe cumplir ESTRICTAMENTE con:
+
+- MVVM estricto en frontend
+- CQRS estricto en backend
+- SOLID
+- Dependency Injection
+- Clean Architecture
+- Arquitectura por capas
+- Separación de responsabilidades
+- Dependency Inversion
+- Interface Segregation
+- Separación frontend/backend
+- Persistencia mediante repositorios
+- Controllers delgados
+- Use Cases en frontend
+- ViewModels como estado de presentación
+- Commands y Queries separados
+
+No quiero una implementación:
+
+- parcial;
+- aproximada;
+- improvisada;
+- "más o menos";
+- funcional pero arquitectónicamente incorrecta.
+
+No basta con que compile.
+
+Cada archivo, clase, interfaz y dependencia debe encontrarse en la capa correcta.
+
+==================================================
+FRONTEND - ANGULAR
+==================================================
+
+El frontend utiliza MVVM ESTRICTO.
+
+El flujo esperado es:
+
+View
+↓
+ViewModel
+↓
+Use Case
+↓
+Repository Interface
+↓
+Repository Implementation
+↓
+DataSource / HttpClient
+↓
+Backend SAHUR
+
+El frontend NUNCA debe saltarse capas.
+
+==================================================
+VIEW
+==================================================
+
+La View corresponde principalmente a:
+
+- archivos HTML;
+- templates;
+- componentes visuales;
+- bindings;
+- eventos de interfaz;
+- presentación de información.
+
+La View NO debe contener lógica de negocio.
+
+La View NO debe:
+
+- consumir HttpClient;
+- consumir endpoints directamente;
+- usar repositorios directamente;
+- consultar la base de datos;
+- contener reglas de negocio;
+- decidir procesos complejos;
+- conocer detalles del backend;
+- realizar transformaciones de dominio importantes.
+
+El TypeScript asociado a una View debe mantenerse lo más pequeño posible.
+
+Idealmente debe limitarse a:
+
+- recibir eventos;
+- leer parámetros visuales;
+- delegar operaciones al ViewModel;
+- mostrar estado.
+
+Ejemplo conceptual:
+
+export class CatalogView {
+    readonly vm = inject(CatalogViewModel);
+}
+
+La View habla con el ViewModel.
+
+NO con Repository.
+NO con HttpClient.
+NO con Backend directamente.
+
+==================================================
+VIEWMODEL
+==================================================
+
+El ViewModel administra el estado de una pantalla o feature.
+
+Debe encargarse de:
+
+- Signals;
+- estado;
+- loading;
+- errores;
+- datos mostrados;
+- selección actual;
+- estado visual;
+- interacción con Use Cases;
+- coordinación de acciones de presentación.
+
+Puede exponer:
+
+signal()
+computed()
+readonly signals
+
+El ViewModel NO debe utilizar directamente:
+
+HttpClient
+DbContext
+URLs
+backend
+Entity Framework
+localStorage salvo que exista una abstracción específica del proyecto
+implementaciones concretas de repositorios
+
+El ViewModel debe depender de Use Cases.
+
+Ejemplo:
+
+CatalogViewModel
+↓
+GetProductsUseCase
+
+NO:
+
+CatalogViewModel
+↓
+HttpClient
+
+==================================================
+DOMAIN DEL FRONTEND
+==================================================
+
+Debe contener conceptos independientes de Angular HTTP y detalles externos.
+
+Ejemplo:
+
+domain/
+├── entities/
+├── repositories/
+├── use-cases/
+├── services/
+└── errors/
+
+Puede contener:
+
+- entidades;
+- tipos;
+- contratos;
+- Repository Interfaces;
+- Use Cases;
+- errores de dominio;
+- abstracciones necesarias.
+
+Las interfaces de repositorio pertenecen aquí.
+
+Ejemplos:
+
+ProductRepository
+CartRepository
+UserRepository
+InventoryRepository
+AuditRepository
+
+Las interfaces deben ser específicas.
+
+Evitar interfaces gigantes.
+
+==================================================
+USE CASES DEL FRONTEND
+==================================================
+
+Cada acción importante debe poder expresarse mediante un Use Case.
+
+Ejemplos:
+
+GetProductsUseCase
+GetProductByIdUseCase
+CreateProductUseCase
+UpdateProductUseCase
+DeleteProductUseCase
+AddProductToCartUseCase
+GetInventoryUseCase
+
+El Use Case:
+
+- representa una intención;
+- depende de abstracciones;
+- NO conoce HttpClient;
+- NO conoce componentes visuales;
+- NO conoce HTML;
+- NO conoce Entity Framework;
+- NO conoce Controllers.
+
+Flujo:
+
+ViewModel
+↓
+Use Case
+↓
+Repository Interface
+
+==================================================
+DATA DEL FRONTEND
+==================================================
+
+Debe contener detalles técnicos relacionados con acceso a datos.
+
+Ejemplo:
+
+data/
+├── datasources/
+├── dto/
+├── mappers/
+├── repositories/
+└── services/
+
+Aquí pueden existir:
+
+HttpClient
+DTOs HTTP
+Mappers
+implementaciones de repositorios
+adaptadores técnicos
+
+Aquí se implementan interfaces definidas en Domain.
+
+Ejemplo:
+
+Domain:
+
+ProductRepository
+
+Data:
+
+HttpProductRepository implements ProductRepository
+
+La implementación HTTP puede conocer:
+
+environment.apiUrl
+HttpClient
+endpoints REST
+DTOs HTTP
+
+La View NO conoce nada de esto.
+
+El ViewModel tampoco.
+
+==================================================
+DTOs Y ENTIDADES FRONTEND
+==================================================
+
+NO utilizar automáticamente el mismo objeto para todo.
+
+Distinguir cuando sea necesario entre:
+
+DTO
+Entidad
+View State
+Request
+Response
+
+Ejemplo:
+
+ProductDto
+↓ mapper
+Product
+
+Un DTO HTTP no debe llegar directamente a una View si el diseño requiere una entidad de dominio.
+
+==================================================
+PRESENTATION
+==================================================
+
+Debe organizarse por funcionalidad.
+
+Ejemplo:
+
+presentation/
+├── auth/
+├── catalog/
+├── inventory/
+├── cart/
+├── users/
+├── audit/
+└── profile/
+
+Cada feature puede contener:
+
+views/
+view-models/
+components/
+
+Ejemplo:
+
+presentation/
+└── catalog/
+    ├── views/
+    ├── view-models/
+    └── components/
+
+Mantener cada feature aislada siempre que sea posible.
+
+==================================================
+BACKEND - .NET
+==================================================
+
+El backend utiliza CQRS ESTRICTO.
+
+Toda operación debe clasificarse como:
+
+COMMAND
+
+o
+
+QUERY
+
+Nunca se deben mezclar responsabilidades.
+
+==================================================
+QUERIES
+==================================================
+
+Una Query:
+
+- obtiene información;
+- consulta estado;
+- NO modifica datos;
+- NO realiza escrituras;
+- NO llama SaveChangesAsync;
+- tiene su QueryHandler correspondiente.
+
+Ejemplos:
+
+GetProductsQuery
+GetProductByIdQuery
+GetUsersQuery
+GetInventoryQuery
+GetCartQuery
+GetAuditRecordsQuery
+
+Cada Query debe tener su propio Handler.
+
+Ejemplo:
+
+GetProductsQuery
+GetProductsQueryHandler
+
+NO utilizar una Query para modificar información.
+
+==================================================
+COMMANDS
+==================================================
+
+Un Command representa una modificación del estado.
+
+Puede:
+
+- crear;
+- modificar;
+- eliminar;
+- cambiar estado;
+- registrar una acción;
+- agregar elementos;
+- remover elementos.
+
+Ejemplos:
+
+CreateProductCommand
+UpdateProductCommand
+DeleteProductCommand
+AddProductToCartCommand
+RemoveProductFromCartCommand
+CreateUserCommand
+CreateAuditCommand
+
+Cada Command debe tener su CommandHandler correspondiente.
+
+Ejemplo:
+
+CreateProductCommand
+CreateProductCommandHandler
+
+Un Command NO debe utilizarse únicamente para consultar datos.
+
+==================================================
+MEDIATR
+==================================================
+
+Cuando la solución utilice MediatR, el flujo esperado es:
+
+Controller
+↓
+ISender / IMediator
+↓
+Command o Query
+↓
+Handler
+
+El Controller NO debe crear Handlers manualmente.
+
+NO utilizar:
+
+new GetProductsQueryHandler(...)
+
+Debe resolverse mediante Dependency Injection.
+
+==================================================
+SAHUR.DOMAIN
+==================================================
+
+Sahur.Domain debe ser la capa más independiente.
+
+Puede contener:
+
+Entities
+ValueObjects
+Enums
+Domain Events
+Domain Exceptions
+Domain Policies
+Domain Rules
+Repository Contracts si arquitectónicamente corresponde
+
+Domain NO puede depender de:
+
+Sahur.Infrastructure
+Sahur.Api
+ASP.NET Core
+Entity Framework Core
+MediatR
+HttpClient
+Angular
+Controllers
+DTOs HTTP
+
+Domain representa reglas del negocio.
+
+Debe ser independiente de detalles técnicos.
+
+==================================================
+ENTIDADES DE DOMINIO
+==================================================
+
+Las entidades deben representar conceptos reales del sistema.
+
+Ejemplos:
+
+Product
+User
+Cart
+CartItem
+InventoryItem
+AuditEntry
+
+NO conviertas una entidad en un contenedor gigante sin comportamiento cuando existan reglas que naturalmente pertenecen al dominio.
+
+Al mismo tiempo:
+
+NO inventes reglas de negocio que la User Story no solicite.
+
+==================================================
+SAHUR.APPLICATION
+==================================================
+
+Contiene la lógica de aplicación.
+
+Principalmente:
+
+Commands
+Queries
+Handlers
+Application DTOs
+Read Models
+Validators
+Contracts
+Abstractions
+Application Exceptions
+
+Ejemplo:
+
+Products/
+├── Commands/
+│   ├── CreateProduct/
+│   │   ├── CreateProductCommand.cs
+│   │   └── CreateProductCommandHandler.cs
+│   │
+│   ├── UpdateProduct/
+│   └── DeleteProduct/
+│
+└── Queries/
+    ├── GetProducts/
+    └── GetProductById/
+
+Application puede depender de Domain.
+
+Application NO debe depender directamente de Infrastructure.
+
+Application NO debe conocer:
+
+DbContext concreto
+EF InMemory
+Controllers
+ASP.NET
+implementaciones concretas de repositorios
+
+==================================================
+SAHUR.INFRASTRUCTURE
+==================================================
+
+Infrastructure contiene detalles técnicos.
+
+Aquí pertenecen:
+
+Entity Framework Core
+EF Core InMemory
+DbContext
+DbSet
+Repository implementations
+Persistence
+Data seeding
+Mappers técnicos
+adaptadores de infraestructura
+
+Infrastructure implementa contratos definidos por capas internas.
+
+Ejemplo:
+
+IProductReadRepository
+↓
+EfProductReadRepository
+
+IProductWriteRepository
+↓
+EfProductWriteRepository
+
+==================================================
+BASE DE DATOS SIMULADA
+==================================================
+
+El proyecto utiliza:
+
+Entity Framework Core InMemory
+
+Esto NO significa:
+
+"usar listas porque es una simulación".
+
+Debe trabajarse como una base de datos real.
+
+Usar correctamente:
+
+DbContext
+DbSet<TEntity>
+Repositories
+LINQ
+SaveChangesAsync
+Dependency Injection
+mapeo de entidades si corresponde
+
+Ejemplo conceptual:
+
+SahurDbContext
+{
+    DbSet<Product>
+    DbSet<User>
+    DbSet<Cart>
+}
+
+Las implementaciones de repositorios acceden al DbContext.
+
+Los Controllers NO.
+
+Los Handlers dependen de contratos de repositorio.
+
+==================================================
+SEED DATA
+==================================================
+
+Si el proyecto necesita datos iniciales simulados, utilizar un mecanismo centralizado.
+
+Ejemplos posibles:
+
+DatabaseSeeder
+DataSeeder
+DbInitializer
+
+NO duplicar datos en:
+
+Controllers
+Handlers
+ViewModels
+Views
+
+NO crear datos hardcodeados independientemente en distintas funcionalidades.
+
+Los datos de simulación deben existir en Infrastructure.
+
+==================================================
+SAHUR.API
+==================================================
+
+Debe contener:
+
+Controllers
+Middleware
+Authentication/Authorization si corresponde
+HTTP Contracts
+Configuración
+Dependency Injection
+Program.cs
+
+Los Controllers deben ser DELGADOS.
+
+Un Controller puede:
+
+- recibir HTTP;
+- validar aspectos básicos del request;
+- crear un Command o Query;
+- enviarlo mediante ISender;
+- convertir el resultado en HTTP response.
+
+Un Controller NO debe:
+
+- contener lógica de negocio;
+- acceder directamente al DbContext;
+- utilizar DbSet;
+- realizar LINQ de negocio;
+- manipular EF Core;
+- implementar operaciones del dominio;
+- crear repositorios manualmente;
+- crear handlers manualmente.
+
+Flujo correcto:
+
+HTTP Request
+↓
+Controller
+↓
+Command / Query
+↓
+ISender
+↓
+Handler
+↓
+Repository Interface
+↓
+Infrastructure
+↓
+EF Core InMemory
+
+==================================================
+CQRS Y REPOSITORIOS
+==================================================
+
+Cuando sea razonable, separar interfaces de lectura y escritura.
+
+Ejemplo:
+
+IProductReadRepository
+IProductWriteRepository
+
+Lectura:
+
+GetAllAsync()
+GetByIdAsync()
+
+Escritura:
+
+AddAsync()
+UpdateAsync()
+DeleteAsync()
+
+NO crear automáticamente una interfaz gigante:
+
+IRepository<T>
+
+con:
+
+Get
+GetAll
+Insert
+Update
+Delete
+Search
+Count
+Save
+Audit
+etc.
+
+Eso viola Interface Segregation cuando las clases consumidoras no necesitan todos los métodos.
+
+Preferir contratos pequeños y específicos.
+
+==================================================
+SOLID
+==================================================
+
+Todas las implementaciones deben respetar estrictamente los cinco principios.
+
+==================================================
+S - SINGLE RESPONSIBILITY PRINCIPLE
+==================================================
+
+Cada clase debe tener una responsabilidad claramente definida.
+
+Ejemplos:
+
+ProductReadRepository:
+lectura de productos.
+
+ProductWriteRepository:
+escritura de productos.
+
+GetProductsQueryHandler:
+resolver GetProductsQuery.
+
+CatalogViewModel:
+estado del catálogo.
+
+NO crear clases gigantes como:
+
+ProductService
+SystemManager
+ApplicationService
+GeneralRepository
+
+que hagan múltiples cosas sin relación.
+
+==================================================
+O - OPEN/CLOSED PRINCIPLE
+==================================================
+
+El código debe poder extenderse sin modificar innecesariamente consumidores existentes.
+
+Depender de abstracciones cuando sea apropiado.
+
+Ejemplo:
+
+IProductReadRepository
+
+puede tener:
+
+EfProductReadRepository
+
+y en el futuro:
+
+SqlProductReadRepository
+
+sin modificar el Handler que depende de la interfaz.
+
+==================================================
+L - LISKOV SUBSTITUTION PRINCIPLE
+==================================================
+
+Las implementaciones deben respetar sus contratos.
+
+Una implementación concreta debe poder sustituir a otra sin cambiar el comportamiento esperado del consumidor.
+
+No crear implementaciones que rompan semánticamente una interfaz.
+
+==================================================
+I - INTERFACE SEGREGATION PRINCIPLE
+==================================================
+
+Preferir interfaces pequeñas y específicas.
+
+Correcto:
+
+IProductReadRepository
+IProductWriteRepository
+
+Incorrecto:
+
+IProductRepositoryWithEverything
+
+cuando un consumidor únicamente necesita lectura.
+
+==================================================
+D - DEPENDENCY INVERSION PRINCIPLE
+==================================================
+
+Las capas superiores dependen de abstracciones.
+
+No de implementaciones.
+
+Usar Dependency Injection.
+
+Evitar dentro de lógica de aplicación:
+
+new Repository()
+new DbContext()
+new HttpClient()
+new Handler()
+
+Las dependencias deben ser suministradas por el contenedor de DI.
+
+==================================================
+DEPENDENCY INJECTION
+==================================================
+
+Toda implementación debe registrarse explícitamente en la capa adecuada.
+
+Ejemplo conceptual:
+
+services.AddScoped<IProductReadRepository, ProductReadRepository>();
+
+Nunca ocultar dependencias mediante:
+
+new
+Service Locator
+variables globales
+singletons improvisados
+
+A menos que exista una justificación técnica válida.
+
+==================================================
+FLUJO DE REFERENCIA PARA LECTURA
+==================================================
+
+Frontend:
+
+Angular View
+↓
+ViewModel
+↓
+Use Case
+↓
+Repository Interface
+↓
+HTTP Repository
+↓
+Backend API
+
+Backend:
+
+Controller
+↓
+Query
+↓
+QueryHandler
+↓
+Read Repository Interface
+↓
+Repository Implementation
+↓
+DbContext
+↓
+EF Core InMemory
+
+Flujo completo:
+
+View
+↓
+ViewModel
+↓
+Use Case
+↓
+Repository Interface
+↓
+HTTP Repository
+↓
+HTTP
+↓
+Controller
+↓
+Query
+↓
+Handler
+↓
+Read Repository
+↓
+EF Core
+↓
+InMemory Database
+
+==================================================
+FLUJO DE REFERENCIA PARA ESCRITURA
+==================================================
+
+Frontend:
+
+View
+↓
+ViewModel
+↓
+Use Case
+↓
+Repository Interface
+↓
+HTTP Repository
+
+Backend:
+
+Controller
+↓
+Command
+↓
+CommandHandler
+↓
+Domain
+↓
+Write Repository Interface
+↓
+Repository Implementation
+↓
+DbContext
+↓
+SaveChangesAsync
+↓
+EF Core InMemory
+
+Flujo completo:
+
+Angular View
+↓
+ViewModel
+↓
+Use Case
+↓
+Repository Interface
+↓
+HTTP Repository
+↓
+HTTP Request
+↓
+Controller
+↓
+Command
+↓
+CommandHandler
+↓
+Domain
+↓
+Write Repository
+↓
+DbContext
+↓
+SaveChangesAsync
+↓
+InMemory Database
+
+==================================================
+NO EXISTEN APIS EXTERNAS
+==================================================
+
+Esta regla es MUY IMPORTANTE.
+
+SAHUR ya NO utiliza Fake Store API.
+
+NO debes utilizar:
+
+fakestoreapi.com
+FakeStoreProductRepository
+FakeStoreAuthenticationGateway
+FakeStore DTOs
+URLs externas para productos
+URLs externas para usuarios
+servicios externos para implementar las User Stories
+
+NO vuelvas a introducir Fake Store API.
+
+NO uses otra API externa como sustituto.
+
+NO agregues datos desde servicios externos.
+
+Los datos deben provenir de nuestro propio backend.
+
+Frontend:
+
+Angular
+↓
+Sahur.Api
+
+Backend:
+
+Sahur.Api
+↓
+Application
+↓
+Domain
+↓
+Infrastructure
+↓
+EF Core InMemory
+
+==================================================
+PRUEBAS ARQUITECTÓNICAS
+==================================================
+
+El proyecto contiene:
+
+Sahur.ArchitectureTests
+
+Su objetivo es impedir violaciones arquitectónicas.
+
+Debe conservarse.
+
+Las pruebas deben comprobar reglas como:
+
+Domain NO depende de Infrastructure
+Domain NO depende de Api
+Domain NO depende de Application cuando la arquitectura establecida no lo permita
+
+Application NO depende de Infrastructure
+Application NO depende de Api
+
+Infrastructure puede depender de capas internas según la arquitectura.
+
+Api puede depender de Application e Infrastructure para configuración/composición.
+
+No hagas cambios que hagan fallar estas pruebas.
+
+Si agregas una nueva capa o dependencia importante, analiza si las pruebas arquitectónicas deben extenderse.
+
+NO elimines pruebas porque una implementación las rompe.
+
+Corrige la arquitectura.
+
+==================================================
+REGLAS PROHIBIDAS
+==================================================
+
+NO hagas ninguna de estas cosas:
+
+HttpClient en Angular Component
+
+HttpClient en ViewModel
+
+Lógica de negocio en Angular Component
+
+View llamando directamente Repository
+
+View llamando directamente backend
+
+ViewModel usando HttpClient
+
+ViewModel usando URL
+
+ViewModel usando DbContext
+
+ViewModel utilizando una implementación concreta innecesariamente
+
+Controller usando DbContext
+
+Controller usando DbSet
+
+Controller haciendo consultas LINQ directamente a EF
+
+Controller con lógica de negocio
+
+Controller creando Repository con new
+
+Controller creando Handler con new
+
+Query modificando estado
+
+Query llamando SaveChangesAsync
+
+Command usado únicamente para mostrar información
+
+Command y Query mezclados en el mismo objeto
+
+Handler gigante con múltiples responsabilidades
+
+Service gigante con CRUD completo sin separación
+
+IRepository gigante
+
+Generic Repository utilizado automáticamente para todo
+
+Domain dependiendo de Infrastructure
+
+Domain dependiendo de Api
+
+Domain dependiendo de EF Core
+
+Domain dependiendo de ASP.NET
+
+Application dependiendo de Infrastructure
+
+Application dependiendo de Api
+
+Application dependiendo de implementaciones concretas
+
+new DbContext() dentro de lógica de aplicación
+
+new Repository() dentro de lógica de aplicación
+
+listas globales utilizadas como base de datos
+
+datos duplicados hardcodeados en Controllers
+
+datos simulados hardcodeados en Angular
+
+acceder directamente a InMemory desde Controllers
+
+saltarse capas porque "es más fácil"
+
+refactorizar toda la solución sin necesidad
+
+implementar funcionalidades que pertenecen a otros integrantes
+
+inventar requisitos que no existen en la User Story
+
+introducir Fake Store API nuevamente
+
+usar cualquier API externa como sustitución de nuestro backend
+
+==================================================
+ANTES DE PROGRAMAR
+==================================================
+
+Antes de modificar archivos debes:
+
+1. Analizar toda la estructura actual del repositorio.
+
+2. Identificar cómo están implementados:
+
+- MVVM;
+- SOLID;
+- CQRS;
+- Dependency Injection;
+- Clean Architecture.
+
+3. Revisar:
+
+backend/Sahur.Domain
+backend/Sahur.Application
+backend/Sahur.Infrastructure
+backend/Sahur.Api
+backend/Sahur.ArchitectureTests
+
+4. Revisar frontend:
+
+domain
+data
+presentation
+core
+
+5. Revisar los archivos de configuración:
+
+Program.cs
+DependencyInjection.cs
+app.config.ts
+app.routes.ts
+environment.ts
+Sahur.sln
+package.json
+tsconfig.json
+
+6. Comprender las dependencias entre proyectos.
+
+7. Identificar los patrones existentes.
+
+8. Buscar implementaciones similares antes de crear algo nuevo.
+
+9. Identificar componentes o abstracciones reutilizables.
+
+10. Revisar el estado actual de Git.
+
+11. NO refactorizar toda la solución sin necesidad.
+
+12. Mantener el estilo arquitectónico existente.
+
+13. No cambiar nombres o carpetas innecesariamente.
+
+14. No modificar User Stories ajenas.
+
+15. No comenzar implementación hasta haber leído mis User Stories.
+
+==================================================
+USER STORIES
+==================================================
+
+ESTA PARTE ES OBLIGATORIA.
+
+Voy a adjuntarte las User Stories que me corresponden.
+
+Debes trabajar SOLAMENTE con base en esas User Stories.
+
+Antes de escribir código debes leer TODAS.
+
+Para cada US debes identificar:
+
+- número de User Story;
+- nombre;
+- actor;
+- objetivo;
+- intención;
+- criterios de aceptación;
+- escenarios;
+- reglas de negocio;
+- operaciones de lectura;
+- operaciones de escritura;
+- entidades involucradas;
+- datos requeridos;
+- validaciones;
+- roles;
+- permisos;
+- errores esperados;
+- navegación;
+- estados visuales;
+- endpoints;
+- Queries;
+- Commands;
+- Handlers;
+- Repository Interfaces;
+- Repository Implementations;
+- Use Cases;
+- ViewModels;
+- Views;
+- DTOs;
+- Requests;
+- Responses;
+- Mappers;
+- posibles cambios en Domain;
+- posibles cambios en Infrastructure;
+- posibles cambios en Dependency Injection.
+
+Después debes separar claramente:
+
+FRONTEND
+
+y
+
+BACKEND
+
+==================================================
+ANÁLISIS PREVIO DE CADA USER STORY
+==================================================
+
+Antes de implementar una US debes mostrarme:
+
+1. Qué pide exactamente la User Story.
+
+2. Qué NO pide.
+
+3. Qué funcionalidad ya existe y puede reutilizarse.
+
+4. Qué archivos existentes deben modificarse.
+
+5. Qué archivos nuevos deben crearse.
+
+6. A qué capa pertenece cada archivo.
+
+7. Qué datos necesita.
+
+8. Qué entidad o entidades intervienen.
+
+9. Si es una operación de lectura.
+
+10. Si es una operación de escritura.
+
+11. Qué Query se necesita.
+
+12. Qué Command se necesita.
+
+13. Qué Handler se necesita.
+
+14. Qué Repository Interface se necesita.
+
+15. Qué Repository Implementation se necesita.
+
+16. Qué endpoint se necesita.
+
+17. Qué Use Case frontend se necesita.
+
+18. Qué ViewModel se necesita.
+
+19. Qué View se necesita.
+
+20. Qué DTOs o modelos se necesitan.
+
+21. Qué dependencias deben registrarse.
+
+22. Cómo cumplirá SOLID.
+
+23. Cómo cumplirá MVVM.
+
+24. Cómo cumplirá CQRS.
+
+25. Cómo cumplirá Dependency Injection.
+
+26. Cómo cumplirá Clean Architecture.
+
+27. Qué pruebas serán necesarias.
+
+28. Posibles riesgos de integración.
+
+29. Posibles conflictos con trabajo de otros integrantes.
+
+30. Flujo completo de la User Story.
+
+==================================================
+NO INVENTAR REQUERIMIENTOS
+==================================================
+
+Si algo no está especificado en una User Story:
+
+NO lo inventes.
+
+Primero revisa:
+
+1. comportamiento existente;
+2. arquitectura base;
+3. patrones existentes;
+4. otras clases relacionadas;
+5. reglas generales del proyecto.
+
+Si después de revisar sigue existiendo una ambigüedad importante que pueda cambiar el comportamiento de la funcionalidad, pregúntame.
+
+No inventes:
+
+endpoints
+campos
+roles
+reglas
+validaciones
+mensajes
+permisos
+funcionalidades
+acciones
+datos
+
+solo porque parezcan lógicos.
+
+==================================================
+FORMA DE TRABAJO
+==================================================
+
+Quiero trabajar PASO POR PASO.
+
+Para cada User Story:
+
+1. Analiza la US.
+
+2. Explícame qué vamos a implementar.
+
+3. Muéstrame el flujo arquitectónico.
+
+4. Dime qué archivos se crearán.
+
+5. Dime qué archivos se modificarán.
+
+6. Explica en qué capa pertenece cada archivo.
+
+7. Implementa el Domain si corresponde.
+
+8. Implementa Application.
+
+9. Implementa Infrastructure.
+
+10. Implementa Api.
+
+11. Configura Dependency Injection.
+
+12. Implementa Domain frontend.
+
+13. Implementa Data frontend.
+
+14. Implementa Use Cases.
+
+15. Implementa ViewModels.
+
+16. Implementa Views.
+
+17. Configura rutas si corresponde.
+
+18. Ejecuta o indícame cómo ejecutar:
+
+frontend build
+backend build
+tests
+architecture tests
+
+19. Comprueba los criterios de aceptación uno por uno.
+
+20. Corrige errores encontrados.
+
+21. Revisa nuevamente arquitectura.
+
+22. Revisa Git diff.
+
+23. Explica el flujo completo final.
+
+No des por terminada una User Story únicamente porque compile.
+
+Debe cumplir:
+
+funcionalidad
+criterios de aceptación
+arquitectura
+SOLID
+MVVM
+CQRS
+DI
+pruebas
+
+==================================================
+FRONTEND - VERIFICACIONES
+==================================================
+
+Antes de considerar terminado el frontend debes comprobar:
+
+npm ci
+
+npm run build
+
+Si existen pruebas:
+
+npm test
+
+También revisar:
+
+- errores TypeScript;
+- warnings importantes;
+- imports rotos;
+- rutas;
+- providers;
+- Dependency Injection;
+- templates;
+- Signals;
+- loading;
+- errores;
+- estado vacío;
+- navegación.
+
+==================================================
+BACKEND - VERIFICACIONES
+==================================================
+
+Ejecutar:
+
+dotnet restore
+
+dotnet build Sahur.sln --configuration Release
+
+dotnet test Sahur.sln --configuration Release
+
+Deben compilar:
+
+Sahur.Domain
+Sahur.Application
+Sahur.Infrastructure
+Sahur.Api
+Sahur.ArchitectureTests
+
+No ignores warnings importantes.
+
+==================================================
+PRUEBAS ARQUITECTÓNICAS
+==================================================
+
+Siempre ejecutar:
+
+dotnet test
+
+Verificar que Sahur.ArchitectureTests siga pasando.
+
+Si una prueba arquitectónica falla:
+
+NO elimines la prueba.
+
+Analiza la dependencia incorrecta y corrige el código.
+
+==================================================
+BASE DE DATOS INMEMORY
+==================================================
+
+Cuando una User Story necesite persistencia:
+
+NO utilices listas globales.
+
+NO almacenes datos dentro del Controller.
+
+NO almacenes datos dentro del Handler.
+
+NO almacenes datos dentro de un ViewModel.
+
+Utiliza:
+
+Entity
+↓
+DbSet
+↓
+SahurDbContext
+↓
+Repository
+↓
+Handler
+
+Para escritura:
+
+CommandHandler
+↓
+Repository
+↓
+DbContext
+↓
+SaveChangesAsync
+
+Para lectura:
+
+QueryHandler
+↓
+Read Repository
+↓
+DbContext
+↓
+LINQ
+↓
+ReadModel / DTO
+
+==================================================
+DATOS SIMULADOS
+==================================================
+
+Si una historia necesita datos iniciales:
+
+utiliza Seed Data.
+
+Debe estar centralizado.
+
+Ejemplo:
+
+Infrastructure/
+└── Persistence/
+    ├── SahurDbContext.cs
+    └── SahurDatabaseSeeder.cs
+
+No dupliques los datos en diferentes clases.
+
+==================================================
+SEGURIDAD Y ROLES
+==================================================
+
+Si una User Story incluye roles o permisos:
+
+NO confíes únicamente en ocultar botones frontend.
+
+El frontend puede controlar la presentación.
+
+Pero las operaciones importantes también deben validarse en backend cuando la US lo requiera.
+
+Ejemplo:
+
+Cliente:
+View no muestra Editar.
+
+Administrador:
+View muestra Editar.
+
+Pero además:
+
+Backend debe impedir una operación no autorizada si un usuario intenta llamar el endpoint manualmente.
+
+No inventes autenticación o autorización si la US no la define.
+
+Reutiliza la infraestructura existente del proyecto si ya existe.
+
+==================================================
+ERRORES
+==================================================
+
+Los errores deben manejarse en la capa correcta.
+
+Infrastructure:
+errores técnicos de persistencia.
+
+Application:
+errores de casos de uso.
+
+Domain:
+violaciones de reglas del dominio.
+
+Api:
+conversión del resultado a respuesta HTTP.
+
+Frontend Data:
+errores HTTP.
+
+ViewModel:
+estado de error mostrado a la View.
+
+View:
+únicamente presentación.
+
+==================================================
+HTTP STATUS CODES
+==================================================
+
+Utilizar respuestas coherentes cuando corresponda.
+
+Ejemplos:
+
+200 OK
+201 Created
+204 No Content
+400 Bad Request
+401 Unauthorized
+403 Forbidden
+404 Not Found
+409 Conflict
+500 Internal Server Error
+
+No devolver siempre 200 para todo.
+
+Pero tampoco inventar comportamientos que no estén definidos por la US.
+
+==================================================
+ASYNC
+==================================================
+
+Las operaciones de I/O deben ser asíncronas.
+
+Utilizar:
+
+Task
+Task<T>
+async
+await
+CancellationToken
+
+Cuando EF Core disponga de versiones asíncronas:
+
+ToListAsync
+FirstOrDefaultAsync
+SingleOrDefaultAsync
+SaveChangesAsync
+
+Preferirlas.
+
+==================================================
+CANCELLATION TOKEN
+==================================================
+
+Cuando corresponda, propagar CancellationToken:
+
+Controller
+↓
+ISender
+↓
+Handler
+↓
+Repository
+↓
+EF Core
+
+No ignorarlo innecesariamente.
+
+==================================================
+CÓDIGO LIMPIO
+==================================================
+
+Evitar:
+
+clases gigantes
+métodos gigantes
+nombres ambiguos
+abreviaturas innecesarias
+código duplicado
+comentarios que expliquen código obvio
+regiones enormes
+helpers genéricos sin propósito
+
+Los nombres deben reflejar intención.
+
+Ejemplos:
+
+GetProductByIdQuery
+
+mejor que:
+
+GetData
+
+==================================================
+COMENTARIOS
+==================================================
+
+No llenes el proyecto de comentarios innecesarios.
+
+Los comentarios deben explicar:
+
+- decisiones no obvias;
+- reglas importantes;
+- razones arquitectónicas;
+- restricciones.
+
+No explicar literalmente cada línea.
+
+==================================================
+GIT
+==================================================
+
+Estoy trabajando colaborativamente.
+
+Nunca debes asumir que trabajas solo.
+
+La rama de integración del Sprint es:
+
+SP4
+
+Cada integrante debe trabajar en su propia rama.
+
+NO modificar directamente SP4 salvo que yo lo solicite explícitamente.
+
+NO hacer force push.
+
+NO reescribir historial compartido.
+
+NO hacer merge directamente sin autorización.
+
+==================================================
+ANTES DE PROGRAMAR CON GIT
+==================================================
+
+Siempre comprobar:
+
+git status
+
+git branch --show-current
+
+git remote -v
+
+git fetch origin
+
+Antes de iniciar trabajo nuevo, sincronizar correctamente la rama según el flujo del equipo.
+
+==================================================
+CAMBIOS DE OTROS INTEGRANTES
+==================================================
+
+No modificar funcionalidades correspondientes a otros integrantes salvo que sea estrictamente necesario para integrar mi US.
+
+Evitar:
+
+renombrados masivos;
+reorganizaciones;
+formatear todo el proyecto;
+refactors innecesarios;
+cambios cosméticos fuera de alcance.
+
+Esto reduce conflictos de merge.
+
+==================================================
+ANTES DEL COMMIT
+==================================================
+
+Siempre ejecutar:
+
+git status
+
+git diff
+
+Después del staging:
+
+git add ...
+
+git diff --cached
+
+Revisar qué archivos entrarán al commit.
+
+==================================================
+COMMITS
+==================================================
+
+Los mensajes deben ser claros y específicos.
+
+Ejemplos:
+
+feat: implement product creation command
+
+feat: add catalog view model
+
+feat: add inventory read repository
+
+fix: handle product not found
+
+test: add product query tests
+
+refactor: isolate product mapper
+
+No utilizar mensajes como:
+
+cambios
+update
+final
+ya quedó
+prueba
+x
+asd
+
+==================================================
+COMMITS POR USER STORY
+==================================================
+
+Cuando sea razonable, mantener commits pequeños y coherentes.
+
+No meter cinco User Stories no relacionadas en un solo commit.
+
+Pero tampoco fragmentar artificialmente una funcionalidad en decenas de commits sin valor.
+
+==================================================
+PULL REQUEST
+==================================================
+
+Antes del Pull Request:
+
+1. Sincroniza tu rama.
+2. Ejecuta build frontend.
+3. Ejecuta build backend.
+4. Ejecuta tests.
+5. Ejecuta architecture tests.
+6. Revisa git diff.
+7. Verifica criterios de aceptación.
+8. Revisa que no hayas agregado archivos generados.
+9. Revisa que node_modules no esté versionado.
+10. Revisa bin/ y obj/.
+11. Revisa secretos.
+12. Revisa credenciales.
+13. Revisa connection strings sensibles.
+
+El Pull Request debe ir:
+
+mi-rama
+↓
+SP4
+
+Nunca al revés.
+
+==================================================
+CI - GITHUB ACTIONS
+==================================================
+
+El proyecto puede contener integración continua.
+
+Los checks deben pasar antes del merge.
+
+Esperado:
+
+SAHUR CI / frontend
+SAHUR CI / backend
+
+Frontend debe ejecutar al menos:
+
+npm ci
+npm run build
+
+Backend debe ejecutar al menos:
+
+dotnet restore
+dotnet build
+dotnet test
+
+Si CI falla:
+
+NO ignores el error.
+
+NO elimines el workflow.
+
+NO desactives el check.
+
+Revisa el log y corrige la causa real.
+
+==================================================
+ARCHIVOS GENERADOS
+==================================================
+
+Nunca subir:
+
+node_modules/
+dist/
+bin/
+obj/
+.vs/
+archivos temporales
+credenciales
+secretos
+
+Respetar .gitignore.
+
+==================================================
+SECRETS
+==================================================
+
+Nunca colocar en código:
+
+passwords
+tokens
+API keys
+GitHub tokens
+credenciales
+connection strings privadas
+
+Aunque actualmente utilicemos InMemory.
+
+==================================================
+DEPENDENCIAS
+==================================================
+
+No agregar paquetes innecesarios.
+
+Antes de instalar una librería:
+
+1. Comprueba si Angular/.NET ya ofrece la capacidad.
+2. Analiza si realmente se necesita.
+3. Comprueba compatibilidad con versiones actuales.
+4. Evita dependencias abandonadas.
+5. No agregues paquetes únicamente para resolver algo trivial.
+
+==================================================
+NO ACTUALIZAR VERSIONES SIN MOTIVO
+==================================================
+
+No actualices:
+
+Angular
+TypeScript
+.NET
+MediatR
+Entity Framework
+xUnit
+
+solo porque exista una versión nueva.
+
+La solución base define las versiones compatibles del equipo.
+
+==================================================
+RESPETAR LA SOLUCIÓN BASE
+==================================================
+
+La solución base existe para que todos los integrantes trabajen con la misma arquitectura.
+
+No intentes reemplazarla por:
+
+otra arquitectura;
+otro framework;
+otra estructura;
+otro ORM;
+otra librería de estado;
+otro patrón.
+
+Si detectas un problema arquitectónico real:
+
+explícalo primero.
+
+No cambies todo por tu cuenta.
+
+==================================================
+REUTILIZACIÓN
+==================================================
+
+Antes de crear una clase nueva:
+
+busca si existe algo equivalente.
+
+Antes de crear:
+
+Repository
+Use Case
+Mapper
+Entity
+DTO
+ViewModel
+Component
+Service
+
+revisa la solución.
+
+Evitar duplicación.
+
+==================================================
+SCOPE
+==================================================
+
+Trabaja únicamente dentro del alcance de las User Stories que te proporcione.
+
+No aproveches para:
+
+"mejorar" todo el proyecto;
+refactorizar features ajenas;
+cambiar estilos globales;
+renombrar componentes;
+cambiar arquitectura;
+implementar US futuras.
+
+==================================================
+CUANDO ENCUENTRES CÓDIGO INCORRECTO
+==================================================
+
+Si encuentras un problema fuera de mi User Story:
+
+no lo arregles automáticamente.
+
+Primero dime:
+
+- qué encontraste;
+- dónde;
+- por qué es un problema;
+- si bloquea mi US;
+- si debe corregirse ahora.
+
+Si NO bloquea mi trabajo, déjalo fuera.
+
+==================================================
+CUANDO ENCUENTRES CONFLICTOS
+==================================================
+
+Si detectas código de otro integrante que entra en conflicto con mi US:
+
+no lo elimines.
+
+Analiza:
+
+- quién parece ser responsable de ese módulo;
+- qué parte necesita mi US;
+- cuál es la mínima modificación necesaria.
+
+Priorizar cambios pequeños.
+
+==================================================
+RESPUESTA DE LA IA ANTES DE PROGRAMAR
+==================================================
+
+Cuando te entregue mis User Stories, tu primera respuesta debe contener:
+
+US identificadas.
+
+Para cada US:
+
+Objetivo
+Actor
+Criterios de aceptación
+Lecturas
+Escrituras
+Entidades
+Queries
+Commands
+Handlers
+Repositories
+Endpoints
+Use Cases
+ViewModels
+Views
+Archivos nuevos
+Archivos modificados
+Flujo frontend
+Flujo backend
+
+Después:
+
+explica si hay dependencias entre las User Stories.
+
+Después:
+
+propón el orden correcto de implementación.
+
+NO empieces a escribir código antes de haber realizado este análisis.
+
+==================================================
+DURANTE LA IMPLEMENTACIÓN
+==================================================
+
+No me des archivos sueltos sin explicar dónde van.
+
+Para cada archivo indicar:
+
+ruta completa
+si es nuevo o existente
+capa
+responsabilidad
+
+Ejemplo:
+
+backend/Sahur.Application/Products/Queries/GetProducts/GetProductsQuery.cs
+
+Tipo:
+Nuevo
+
+Capa:
+Application
+
+Responsabilidad:
+Representar la solicitud de lectura del catálogo.
+
+==================================================
+AL FINALIZAR UNA USER STORY
+==================================================
+
+Debes entregar:
+
+1. Resumen de lo implementado.
+
+2. Archivos creados.
+
+3. Archivos modificados.
+
+4. Flujo frontend.
+
+5. Flujo backend.
+
+6. Cómo cumple MVVM.
+
+7. Cómo cumple CQRS.
+
+8. Cómo cumple SOLID.
+
+9. Cómo cumple Dependency Injection.
+
+10. Cómo cumple Clean Architecture.
+
+11. Criterios de aceptación comprobados.
+
+12. Comandos de build.
+
+13. Comandos de tests.
+
+14. Resultado esperado.
+
+15. Comando Git sugerido.
+
+==================================================
+DEFINITION OF DONE
+==================================================
+
+Una User Story NO está terminada hasta cumplir:
+
+[ ] Criterios de aceptación.
+
+[ ] Frontend funciona.
+
+[ ] Backend funciona.
+
+[ ] Persistencia funciona.
+
+[ ] MVVM correcto.
+
+[ ] CQRS correcto.
+
+[ ] SOLID correcto.
+
+[ ] DI correcto.
+
+[ ] Clean Architecture correcta.
+
+[ ] Sin acceso directo de Views a HttpClient.
+
+[ ] Sin acceso directo de ViewModels a HttpClient.
+
+[ ] Sin DbContext en Controllers.
+
+[ ] Sin Commands usados como Queries.
+
+[ ] Sin Queries modificando estado.
+
+[ ] Sin Fake Store API.
+
+[ ] Sin APIs externas.
+
+[ ] npm run build exitoso.
+
+[ ] dotnet build exitoso.
+
+[ ] dotnet test exitoso.
+
+[ ] ArchitectureTests exitosos.
+
+[ ] CI exitoso.
+
+[ ] git diff revisado.
+
+[ ] User Story validada.
+
+==================================================
+OBJETIVO FINAL
+==================================================
+
+Tu objetivo NO es simplemente hacer que la aplicación funcione.
+
+Tu objetivo es ayudarme a implementar mis User Stories de forma técnicamente correcta y demostrable, manteniendo estrictamente:
+
+MVVM
+SOLID
+CQRS
+Dependency Injection
+Clean Architecture
+Arquitectura por capas
+Separación de responsabilidades
+Frontend / Backend separados
+REST API propia
+Entity Framework Core
+EF Core InMemory
+Repositorio colaborativo limpio
+
+La solución debe quedar suficientemente bien estructurada para que en el futuro EF Core InMemory pueda sustituirse por:
+
+SQL Server
+MySQL
+PostgreSQL
+SQLite
+
+sin tener que reescribir Application, Domain ni frontend.
+
+==================================================
+REGLA FINAL
+==================================================
+
+ANTES DE COMENZAR:
+
+1. Revisa completamente el proyecto.
+
+2. Comprende la solución base.
+
+3. Identifica sus patrones.
+
+4. Revisa las User Stories que te entregue.
+
+5. Analiza qué corresponde a cada capa.
+
+6. Explícame el plan.
+
+7. Solo después comienza a programar.
+
+NO IMPLEMENTES NINGUNA USER STORY HASTA QUE YO TE HAYA PROPORCIONADO LAS USER STORIES QUE ME CORRESPONDEN.
+
+NO UTILICES FAKE STORE API.
+
+NO UTILICES APIS EXTERNAS COMO FUENTE DE DATOS.
+
+NO TE SALTES MVVM.
+
+NO TE SALTES CQRS.
+
+NO TE SALTES SOLID.
+
+NO TE SALTES DEPENDENCY INJECTION.
+
+NO TE SALTES CAPAS POR COMODIDAD.
+
+NO CAMBIES LA ARQUITECTURA BASE SIN MI AUTORIZACIÓN.

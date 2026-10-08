@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>sahur-sprint4-auth-propio</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Sahur.Application/Sahur.Application.csproj" />
+    <ProjectReference Include="../Sahur.Infrastructure/Sahur.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>
