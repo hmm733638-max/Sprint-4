@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { administratorGuard } from './presentation/auth/guards/administrator.guard';
 import { authenticatedGuard } from './presentation/auth/guards/authenticated.guard';
+import { clientGuard } from './presentation/auth/guards/client.guard';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'inicio' },
@@ -33,6 +34,14 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./presentation/home/views/home.view')
         .then(module => module.HomeView)
+  },
+  {
+    path: 'carrito',
+    title: 'Mi carrito | SAHUR',
+    canActivate: [clientGuard],
+    loadComponent: () =>
+      import('./presentation/cart/views/cart.view')
+        .then(module => module.CartView)
   },
   { path: '**', redirectTo: '' }
 ];
